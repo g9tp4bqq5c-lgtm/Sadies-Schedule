@@ -593,10 +593,28 @@ async function handleWhoNext() {
   const hasPin = await window.__hasPin(name);
   if (hasPin) {
     document.getElementById("enter-pin-sub").innerHTML = "Enter your PIN to continue as <strong>" + esc(name) + "</strong>.";
-    clearPinPad("enter"); showScreen("screen-enter-pin");
+    // Clear error, show screen, then rebuild pad fresh
+    document.getElementById("enter-error").textContent = "";
+    showScreen("screen-enter-pin");
+    buildPinPad("enter", async (pin, reset) => {
+      const stored = await window.__getPin(pendingName);
+      if (stored === hashPin(pin)) {
+        document.getElementById("enter-error").textContent = "";
+        launchApp(pendingName);
+      } else {
+        document.getElementById("enter-error").textContent = "Incorrect PIN. Try again.";
+        reset();
+      }
+    });
   } else {
     document.getElementById("create-pin-sub").innerHTML = "Hi <strong>" + esc(name) + "</strong>! Set a 4-digit PIN. You'll use this every time you sign in.";
-    clearPinPad("create"); showScreen("screen-create-pin");
+    // Clear error, show screen, then rebuild pad fresh
+    document.getElementById("create-error").textContent = "";
+    showScreen("screen-create-pin");
+    buildPinPad("create", async (pin, reset) => {
+      await window.__setPin(pendingName, hashPin(pin));
+      launchApp(pendingName);
+    });
   }
 }
 
@@ -637,8 +655,7 @@ function clearPinPad(prefix) {
   const p = document.getElementById(prefix + "-pad");  if (p) p.innerHTML = "";
 }
 
-// Build PIN pads immediately and also rebuild when each screen becomes visible.
-// This triple-layered approach ensures the pad renders regardless of timing.
+// Build PIN pads as soon as DOM is ready (fixes blank pad issue)
 function initPinPads() {
   buildPinPad("create", async (pin, reset) => {
     await window.__setPin(pendingName, hashPin(pin));
@@ -659,29 +676,6 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initPinPads);
 } else {
   initPinPads();
-}
-// Also rebuild pads whenever showScreen is called for that screen,
-// in case clearPinPad wiped them before the screen became visible.
-const _origShowScreen = showScreen;
-function showScreen(id) {
-  _origShowScreen(id);
-  if (id === "screen-create-pin") {
-    setTimeout(() => buildPinPad("create", async (pin, reset) => {
-      await window.__setPin(pendingName, hashPin(pin));
-      launchApp(pendingName);
-    }), 50);
-  } else if (id === "screen-enter-pin") {
-    setTimeout(() => buildPinPad("enter", async (pin, reset) => {
-      const stored = await window.__getPin(pendingName);
-      if (stored === hashPin(pin)) {
-        document.getElementById("enter-error").textContent = "";
-        launchApp(pendingName);
-      } else {
-        document.getElementById("enter-error").textContent = "Incorrect PIN. Try again.";
-        reset();
-      }
-    }), 50);
-  }
 }
 
 function launchApp(name) {
