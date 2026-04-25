@@ -555,18 +555,31 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const db    = getDatabase(fbApp);
 
+// Surface Firebase errors (otherwise rule rejections fail silently and
+// users see false "saved" toasts). Most likely cause of a failure here is
+// that the Realtime Database rules don't grant access to the path —
+// e.g. loganEvents / loganTasks need to be added alongside events / tasks.
+const reportFbError = (op, err) => {
+  console.error("Firebase " + op + " failed:", err);
+  const msg = op + " failed — " + ((err && err.message) || "check Firebase rules");
+  if (window.showToast) window.showToast(msg);
+};
+
 window.__db     = db;
 window.__ref    = ref;
-window.__set    = set;
-window.__remove = remove;
-window.__push   = push;
+window.__set    = (r, v) => { const p = set(r, v);    p.catch(e => reportFbError("Save", e));   return p; };
+window.__remove = (r)    => { const p = remove(r);    p.catch(e => reportFbError("Delete", e)); return p; };
+window.__push   = (r, v) => { const p = push(r, v);  p.catch(e => reportFbError("Save", e));   return p; };
 window.__get    = get;
 
-window.__listenCustody     = cb => onValue(ref(db, "custody"),       s => cb(s.val() || {}));
-window.__listenEvents      = cb => onValue(ref(db, "events"),        s => cb(s.val() || {}));
-window.__listenTasks       = cb => onValue(ref(db, "tasks"),         s => cb(s.val() || {}));
-window.__listenLoganEvents = cb => onValue(ref(db, "loganEvents"),   s => cb(s.val() || {}));
-window.__listenLoganTasks  = cb => onValue(ref(db, "loganTasks"),    s => cb(s.val() || {}));
+const listen = (path, cb, label) =>
+  onValue(ref(db, path), s => cb(s.val() || {}), err => reportFbError("Load " + label, err));
+
+window.__listenCustody     = cb => listen("custody",     cb, "custody");
+window.__listenEvents      = cb => listen("events",      cb, "Sadie's events");
+window.__listenTasks       = cb => listen("tasks",       cb, "Sadie's tasks");
+window.__listenLoganEvents = cb => listen("loganEvents", cb, "Logan's events");
+window.__listenLoganTasks  = cb => listen("loganTasks",  cb, "Logan's tasks");
 
 window.__hasPin = async (name) => { const s = await get(ref(db, "pins/" + name)); return s.exists(); };
 window.__getPin = async (name) => { const s = await get(ref(db, "pins/" + name)); return s.exists() ? s.val() : null; };
