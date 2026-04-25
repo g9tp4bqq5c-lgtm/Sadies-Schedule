@@ -723,6 +723,7 @@ function cancelChangePIN() { showApp(); }
 
 // ── Screen 1 ──
 async function handleWhoNext() {
+  const btn = document.querySelector('#screen-who .auth-btn');
   const name = document.getElementById("user-select").value;
   if (!name) { document.getElementById("who-error").textContent = "Please select your name."; return; }
   document.getElementById("who-error").textContent = "";
@@ -739,13 +740,25 @@ async function handleWhoNext() {
     document.getElementById("who-error").textContent = "Could not connect. Check your internet and try again.";
     return;
   }
+  // Race the database read against a 10-second timeout so a hung
+  // Firebase request can't strand the user on the Who screen.
+  if (btn) { btn.disabled = true; btn.textContent = "Checking…"; }
   let hasPin;
   try {
-    hasPin = await window.__hasPin(name);
+    hasPin = await Promise.race([
+      window.__hasPin(name),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 10000))
+    ]);
   } catch(err) {
-    document.getElementById("who-error").textContent = "Could not connect. Check your internet and try again.";
+    console.error("PIN lookup failed:", err);
+    document.getElementById("who-error").textContent =
+      err && err.message === "timeout"
+        ? "Database is slow to respond. Check your internet and try again."
+        : "Could not connect. Check your internet and try again.";
+    if (btn) { btn.disabled = false; btn.textContent = "Continue"; }
     return;
   }
+  if (btn) { btn.disabled = false; btn.textContent = "Continue"; }
   if (hasPin) {
     document.getElementById("enter-pin-sub").innerHTML = "Enter your PIN to continue as <strong>" + esc(name) + "</strong>.";
     document.getElementById("enter-error").textContent = "";

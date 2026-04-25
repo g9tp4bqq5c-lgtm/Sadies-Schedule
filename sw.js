@@ -1,4 +1,4 @@
-const CACHE = "sadies-schedule-v7";
+const CACHE = "sadies-schedule-v8";
 
 self.addEventListener("install", e => {
   self.skipWaiting();
