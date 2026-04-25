@@ -1,4 +1,4 @@
-const CACHE = "sadies-schedule-v1";
+const CACHE = "sadies-schedule-v2";
 const ASSETS = ["/Sadies-Schedule/", "/Sadies-Schedule/index.html", "/Sadies-Schedule/manifest.json"];
 
 self.addEventListener("install", e => {
