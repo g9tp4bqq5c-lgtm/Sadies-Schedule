@@ -204,6 +204,12 @@
   .fab:hover { box-shadow: 0 6px 20px rgba(155,89,182,.5); }
   .fab:active { transform: scale(.92); }
 
+  /* Today (jump to current month) button */
+  .today-fab { position: fixed; bottom: 1.5rem; left: 1.5rem; height: 44px; padding: 0 1rem; border-radius: 22px; background: var(--surface); color: var(--accent); border: 1.5px solid var(--accent); font-family: var(--font-body); font-size: .85rem; font-weight: 600; cursor: pointer; display: none; align-items: center; gap: .35rem; box-shadow: 0 4px 14px rgba(0,0,0,.12); z-index: 200; transition: transform .15s, box-shadow .15s, background .15s; }
+  .today-fab.visible { display: inline-flex; }
+  .today-fab:hover { background: var(--surface2); box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+  .today-fab:active { transform: scale(.94); }
+
   /* MODALS */
   .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 300; align-items: flex-end; justify-content: center; }
   .modal-bg.open { display: flex; }
@@ -355,6 +361,7 @@
       <div class="cal-grid" id="cal-grid"></div>
     </div>
     <button class="fab" onclick="openAddEvent()">+</button>
+    <button class="today-fab" id="today-fab" onclick="goToToday()" aria-label="Jump to current month">&#8634; Today</button>
   </div>
 
   <!-- UPCOMING PANEL -->
@@ -930,6 +937,13 @@ function changeMonth(d) {
   renderCalendar();
 }
 
+function goToToday() {
+  const now = new Date();
+  view.year = now.getFullYear();
+  view.month = now.getMonth();
+  renderCalendar();
+}
+
 // Swipe support
 (function() {
   let touchStartX = 0, touchStartY = 0;
@@ -959,6 +973,12 @@ function renderCalendar() {
   const dim   = new Date(view.year, view.month + 1, 0).getDate();
   const prev  = new Date(view.year, view.month, 0).getDate();
   const today = new Date(); today.setHours(0,0,0,0);
+
+  const todayBtn = document.getElementById("today-fab");
+  if (todayBtn) {
+    const onCurrent = view.year === today.getFullYear() && view.month === today.getMonth();
+    todayBtn.classList.toggle("visible", !onCurrent);
+  }
   const evMap   = buildEventsMap();
   const taskMap = buildTasksMap();
 
