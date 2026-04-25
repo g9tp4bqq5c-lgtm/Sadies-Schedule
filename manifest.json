@@ -6,8 +6,8 @@
   "scope": "/Sadies-Schedule/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0f1117",
-  "theme_color": "#1a1d2e",
+  "background_color": "#f0f4f8",
+  "theme_color": "#9b59b6",
   "icons": [
     {
       "src": "icon-192.png",

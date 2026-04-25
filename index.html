@@ -725,6 +725,7 @@ function cancelChangePIN() { showApp(); }
 async function handleWhoNext() {
   const name = document.getElementById("user-select").value;
   if (!name) { document.getElementById("who-error").textContent = "Please select your name."; return; }
+  if (!window.__hasPin) { document.getElementById("who-error").textContent = "Still connecting… please try again in a moment."; return; }
   document.getElementById("who-error").textContent = "";
   pendingName = name;
   const hasPin = await window.__hasPin(name);
