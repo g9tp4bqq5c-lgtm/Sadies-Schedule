@@ -89,7 +89,9 @@
   .nav-btn { background: var(--surface2); border: 1.5px solid var(--border); color: var(--text); border-radius: 8px; padding: .38rem .75rem; font-size: .9rem; font-family: var(--font-body); cursor: pointer; transition: background .12s; }
   .nav-btn:hover { background: #d0dae6; }
   .nav-btn:active { background: var(--border); }
-  .month-label { font-size: .9rem; font-weight: 600; color: var(--text); min-width: 120px; text-align: center; }
+  .month-label { font-size: .9rem; font-weight: 600; color: var(--text); min-width: 120px; text-align: center; cursor: pointer; padding: .25rem .5rem; border-radius: 6px; transition: background .12s; user-select: none; }
+  .month-label:hover { background: var(--surface2); }
+  .month-label:active { background: var(--border); }
 
   /* TABS */
   .tabs { display: flex; background: var(--surface); border-bottom: 2px solid var(--border); overflow-x: auto; }
@@ -340,7 +342,7 @@
           <button class="options-item danger" role="menuitem" onclick="optionsAction('signOut')">Sign out</button>
         </div>
       </div>
-      <div class="month-label" id="month-label" style="visibility:hidden"></div>
+      <div class="month-label" id="month-label" role="button" tabindex="0" aria-label="Jump to month and year" onclick="openMonthPicker()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMonthPicker();}" style="visibility:hidden"></div>
       <button class="nav-btn" id="fwd-btn" onclick="changeMonth(1)" style="visibility:hidden">&#8250;</button>
     </div>
   </header>
@@ -488,6 +490,30 @@
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('task-modal')">Cancel</button>
       <button class="btn-primary" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- MONTH PICKER MODAL -->
+<div class="modal-bg" id="month-picker-modal">
+  <div class="modal" style="max-height:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Jump to Month</div>
+    <div class="form-row">
+      <div class="date-row">
+        <div>
+          <label class="form-label" style="font-size:.65rem">Month</label>
+          <select class="form-input" id="mp-month"></select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:.65rem">Year</label>
+          <select class="form-input" id="mp-year"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('month-picker-modal')">Cancel</button>
+      <button class="btn-primary" onclick="applyMonthPicker()">Go</button>
     </div>
   </div>
 </div>
@@ -981,6 +1007,48 @@ function goToToday() {
   view.year = now.getFullYear();
   view.month = now.getMonth();
   renderCalendar();
+}
+
+function openMonthPicker() {
+  const monthSel = document.getElementById('mp-month');
+  const yearSel  = document.getElementById('mp-year');
+  if (!monthSel || !yearSel) return;
+  if (!monthSel.options.length) {
+    for (let i = 0; i < 12; i++) {
+      const o = document.createElement('option');
+      o.value = i; o.textContent = MONTHS[i];
+      monthSel.appendChild(o);
+    }
+  }
+  const thisYear = new Date().getFullYear();
+  const desired = [];
+  for (let y = thisYear - 20; y <= thisYear + 20; y++) desired.push(y);
+  if (!desired.includes(view.year)) desired.push(view.year);
+  desired.sort((a, b) => a - b);
+  if (yearSel.options.length !== desired.length ||
+      Number(yearSel.options[0].value) !== desired[0] ||
+      Number(yearSel.options[desired.length - 1].value) !== desired[desired.length - 1]) {
+    yearSel.innerHTML = '';
+    desired.forEach(y => {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      yearSel.appendChild(o);
+    });
+  }
+  monthSel.value = view.month;
+  yearSel.value  = view.year;
+  document.getElementById('month-picker-modal').classList.add('open');
+}
+
+function applyMonthPicker() {
+  const m = parseInt(document.getElementById('mp-month').value, 10);
+  const y = parseInt(document.getElementById('mp-year').value, 10);
+  if (Number.isInteger(m) && Number.isInteger(y)) {
+    view.month = m;
+    view.year  = y;
+    renderCalendar();
+  }
+  closeModal('month-picker-modal');
 }
 
 // Swipe support
