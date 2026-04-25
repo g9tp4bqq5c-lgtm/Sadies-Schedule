@@ -1158,7 +1158,7 @@ function renderUpcoming() {
       const del = document.createElement("button");
       del.className = "task-del"; del.textContent = "\u2715";
       del.title = "Delete event";
-      del.onclick = () => confirmDelete("Delete Event", "Are you sure you want to delete "" + ev.title + ""? This cannot be undone.", () => { window.__remove(window.__ref(window.__db, eventsPath() + "/" + key)); showToast("Event deleted"); });
+      del.onclick = () => confirmDelete("Delete Event", "Are you sure you want to delete \"" + ev.title + "\"? This cannot be undone.", () => { window.__remove(window.__ref(window.__db, eventsPath() + "/" + key)); showToast("Event deleted"); });
       actions.appendChild(editBtn);
       actions.appendChild(del);
 
@@ -1281,7 +1281,7 @@ function deleteEvent(key) {
   const ev = events[key];
   const name = ev ? ev.title : "this event";
   closeModal("day-modal");
-  confirmDelete("Delete Event", "Are you sure you want to delete "" + name + ""? This cannot be undone.", () => {
+  confirmDelete("Delete Event", "Are you sure you want to delete \"" + name + "\"? This cannot be undone.", () => {
     window.__remove(window.__ref(window.__db, eventsPath() + "/" + key));
     showToast("Event deleted");
   });
@@ -1392,7 +1392,7 @@ function toggleTask(key) {
 function deleteTask(key) {
   const t = tasks[key];
   const name = t ? t.title : "this task";
-  confirmDelete("Delete Task", "Are you sure you want to delete "" + name + ""? This cannot be undone.", () => {
+  confirmDelete("Delete Task", "Are you sure you want to delete \"" + name + "\"? This cannot be undone.", () => {
     window.__remove(window.__ref(window.__db, tasksPath() + "/" + key));
     showToast("Task removed");
   });
