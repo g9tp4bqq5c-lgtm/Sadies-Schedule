@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#4a6fa5">
+<meta name="theme-color" content="#9b59b6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Sadie's Schedule">
@@ -24,10 +24,10 @@
     PWA NAME:  Edit manifest.json "name" and "short_name".
   */
   :root {
-    /* Custody colors */
-    --chris: #c0392b;
-    --trev:  #2471a3;
-    --holiday: #8e44ad;
+    /* Custody colors — updated palette */
+    --chris:   #5dade2;   /* light blue */
+    --trev:    #9b59b6;   /* purple */
+    --holiday: #1e8449;   /* deep green */
     /* Light app palette */
     --bg:       #f0f4f8;
     --surface:  #ffffff;
@@ -35,8 +35,8 @@
     --border:   rgba(0,0,0,0.10);
     --text:     #1a2332;
     --text2:    #5a6a7e;
-    --accent:   #2471a3;
-    --danger:   #c0392b;
+    --accent:   #9b59b6;  /* purple to match trev */
+    --danger:   #c0392b;  /* red for conflicts */
     --success:  #1a8a4a;
     --warning:  #d68910;
     --radius: 14px;
@@ -57,7 +57,7 @@
   .auth-select:focus { border-color: var(--accent); }
   .auth-select option { background: var(--surface); }
   .auth-btn { width: 100%; padding: .8rem; border-radius: 10px; border: none; background: var(--accent); color: #fff; font-family: var(--font-body); font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: .25rem; transition: background .15s; }
-  .auth-btn:hover { background: #1a5c8a; }
+  .auth-btn:hover { background: #7d3f9a; }
   .auth-btn:active { opacity: .85; }
   .auth-btn.secondary { background: transparent; border: 1.5px solid var(--border); color: var(--text); margin-top: .75rem; }
   .auth-btn.secondary:hover { background: var(--surface2); }
@@ -91,6 +91,11 @@
   .nav-btn:active { background: var(--border); }
   .month-label { font-size: .9rem; font-weight: 600; color: var(--text); min-width: 120px; text-align: center; }
 
+  /* Switch child button */
+  .switch-child-btn { background: var(--surface2); border: 1.5px solid var(--border); color: var(--text); border-radius: 8px; padding: .38rem .65rem; font-size: .75rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: background .12s; display: none; white-space: nowrap; }
+  .switch-child-btn:hover { background: #d0dae6; }
+  .switch-child-btn.trev-jess-only { display: none; }
+
   /* TABS */
   .tabs { display: flex; background: var(--surface); border-bottom: 2px solid var(--border); overflow-x: auto; }
   .tab-btn { flex: 1; min-width: 0; padding: .65rem .25rem; border: none; background: transparent; color: var(--text2); font-family: var(--font-body); font-size: .78rem; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; transition: color .15s, border-color .15s; white-space: nowrap; margin-bottom: -2px; }
@@ -104,12 +109,15 @@
   .legend-item { display: flex; align-items: center; gap: .35rem; font-size: .7rem; color: var(--text2); font-weight: 500; }
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
+  /* Overnight bar */
+  #overnight-bar { display: none; padding: .42rem 1rem; background: rgba(155,89,182,.08); border-bottom: 1px solid rgba(155,89,182,.18); font-size: .74rem; color: #5d2d8a; font-weight: 500; text-align: center; }
+
   /* PANELS */
   .tab-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
   .tab-panel.active { display: flex; }
 
   /* CALENDAR */
-  .cal-wrapper { flex: 1; padding: .65rem; overflow-y: auto; }
+  .cal-wrapper { flex: 1; padding: .65rem; overflow-y: auto; touch-action: pan-y; }
   .dow-row { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 3px; }
   .dow-cell { text-align: center; font-size: .64rem; font-weight: 600; color: var(--text2); letter-spacing: .05em; padding: .25rem 0; text-transform: uppercase; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
@@ -118,20 +126,26 @@
   .cal-day:active { border-color: var(--accent); }
   .cal-day.other-month { opacity: .3; pointer-events: none; }
   .cal-day.today { border-color: var(--accent); border-width: 2px; }
-  .cal-day.custody-chris { background: #fdf2f0; border-color: rgba(192,57,43,.30); }
-  .cal-day.custody-trev  { background: #eaf4fb; border-color: rgba(36,113,163,.30); }
-  .cal-day.custody-holiday { background: #f5eefb; border-color: rgba(142,68,173,.30); }
+  /* Updated custody background tints */
+  .cal-day.custody-chris   { background: rgba(93,173,226,0.12); border-color: rgba(93,173,226,.35); }
+  .cal-day.custody-trev    { background: rgba(155,89,182,0.12); border-color: rgba(155,89,182,.30); }
+  .cal-day.custody-holiday { background: rgba(30,132,73,0.10);  border-color: rgba(30,132,73,.28); }
   .day-num { font-size: .76rem; font-weight: 600; color: var(--text2); line-height: 1; margin-bottom: 2px; }
   .cal-day.today .day-num { background: var(--accent); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .7rem; }
   .custody-bar { height: 3px; border-radius: 2px; margin-bottom: 3px; }
   .custody-bar.chris   { background: var(--chris); }
   .custody-bar.trev    { background: var(--trev); }
   .custody-bar.holiday { background: var(--holiday); }
+  /* Event chip — updated to purple tones for accent */
   .event-chip { font-size: .58rem; line-height: 1.2; padding: 2px 3px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-  .event-chip.mine    { background: rgba(36,113,163,.12); color: #1a5c8a; }
+  .event-chip.mine    { background: rgba(155,89,182,.12); color: #5d2d8a; }
   .event-chip.overlap { background: rgba(192,57,43,.12); color: var(--danger); }
+  /* Task chip on calendar */
+  .task-chip { font-size: .58rem; line-height: 1.2; padding: 2px 3px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; background: rgba(26,138,74,.12); color: #1a6a3a; }
   .holiday-label { font-size: .55rem; color: var(--holiday); font-weight: 600; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 1px; }
   .more-events { font-size: .55rem; color: var(--text2); padding: 0 2px; }
+  /* Transition day label */
+  .transition-label { font-size: .5rem; color: var(--text2); font-weight: 600; line-height: 1.2; opacity: .8; margin-top: 1px; }
 
   /* UPCOMING */
   .upcoming-wrapper { flex: 1; overflow-y: auto; padding: 1rem; padding-bottom: 2rem; }
@@ -148,11 +162,14 @@
   .upcoming-event-body { flex: 1; min-width: 0; }
   .upcoming-event-title { font-size: .93rem; font-weight: 600; color: var(--text); }
   .upcoming-event-meta { font-size: .75rem; color: var(--text2); margin-top: 2px; }
+  /* Updated badge colors */
   .upcoming-badge { font-size: .65rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; margin-top: 4px; display: inline-block; }
   .upcoming-badge.overlap  { background: rgba(192,57,43,.12); color: var(--danger); }
-  .upcoming-badge.chris    { background: rgba(192,57,43,.10); color: var(--chris); }
-  .upcoming-badge.trev     { background: rgba(36,113,163,.10); color: var(--trev); }
-  .upcoming-badge.holiday  { background: rgba(142,68,173,.10); color: var(--holiday); }
+  .upcoming-badge.chris    { background: rgba(93,173,226,.12); color: #2471a3; }
+  .upcoming-badge.trev     { background: rgba(155,89,182,.12); color: #6c3483; }
+  .upcoming-badge.holiday  { background: rgba(30,132,73,.10); color: #1a6a3a; }
+  /* upcoming event action buttons */
+  .upcoming-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
 
   /* TASKS */
   .tasks-wrapper { flex: 1; overflow-y: auto; padding: 1rem; padding-bottom: 5rem; }
@@ -178,11 +195,13 @@
   .task-stamp { font-size: .7rem; color: var(--success); margin-top: 5px; line-height: 1.4; }
   .task-del { background: none; border: none; color: var(--text2); font-size: .85rem; cursor: pointer; padding: 2px 5px; flex-shrink: 0; opacity: .5; }
   .task-del:hover { opacity: 1; }
+  .task-edit { background: none; border: none; color: var(--text2); font-size: .82rem; cursor: pointer; padding: 2px 5px; flex-shrink: 0; opacity: .5; }
+  .task-edit:hover { opacity: 1; }
   .tasks-empty { text-align: center; color: var(--text2); font-size: .85rem; padding: 1.5rem 0; }
 
   /* FAB */
-  .fab { position: fixed; bottom: 1.5rem; right: 1.5rem; width: 54px; height: 54px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.55rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(36,113,163,.4); z-index: 200; transition: transform .15s, box-shadow .15s; }
-  .fab:hover { box-shadow: 0 6px 20px rgba(36,113,163,.5); }
+  .fab { position: fixed; bottom: 1.5rem; right: 1.5rem; width: 54px; height: 54px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.55rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(155,89,182,.4); z-index: 200; transition: transform .15s, box-shadow .15s; }
+  .fab:hover { box-shadow: 0 6px 20px rgba(155,89,182,.5); }
   .fab:active { transform: scale(.92); }
 
   /* MODALS */
@@ -204,24 +223,27 @@
   .overlap-warning.show { display: block; }
   .modal-actions { display: flex; gap: .75rem; margin-top: 1.25rem; }
   .btn-primary { flex: 1; padding: .78rem; border-radius: 10px; border: none; background: var(--accent); color: #fff; font-family: var(--font-body); font-weight: 600; font-size: .93rem; cursor: pointer; }
-  .btn-primary:hover { background: #1a5c8a; }
+  .btn-primary:hover { background: #7d3f9a; }
   .btn-secondary { padding: .78rem 1.1rem; border-radius: 10px; border: 1.5px solid var(--border); background: transparent; color: var(--text); font-family: var(--font-body); font-size: .93rem; cursor: pointer; }
   .btn-secondary:hover { background: var(--surface2); }
   .btn-danger { padding: .78rem 1.1rem; border-radius: 10px; border: 1.5px solid rgba(192,57,43,.4); background: transparent; color: var(--danger); font-family: var(--font-body); font-size: .93rem; cursor: pointer; }
 
-  .detail-event { background: var(--surface2); border-radius: 10px; padding: .75rem 1rem; margin-bottom: .5rem; position: relative; }
+  .detail-event { background: var(--surface2); border-radius: 10px; padding: .75rem 1rem; margin-bottom: .5rem; position: relative; padding-right: 5rem; }
   .detail-event-title { font-weight: 600; font-size: .92rem; color: var(--text); margin-bottom: .18rem; }
   .detail-event-meta { font-size: .75rem; color: var(--text2); }
-  .detail-event-del { position: absolute; right: .75rem; top: .75rem; background: none; border: none; color: var(--text2); font-size: .95rem; cursor: pointer; padding: 2px 5px; }
+  .detail-event-actions { position: absolute; right: .5rem; top: .65rem; display: flex; gap: 4px; }
+  .detail-event-del { background: none; border: none; color: var(--text2); font-size: .95rem; cursor: pointer; padding: 2px 5px; }
+  .detail-event-edit { background: none; border: none; color: var(--text2); font-size: .9rem; cursor: pointer; padding: 2px 5px; }
   .custody-block-info { background: var(--surface2); border-radius: 10px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .88rem; color: var(--text2); }
 
   .custody-toggle { display: flex; flex-direction: column; gap: 7px; margin-bottom: 1rem; }
   .custody-opt { display: flex; align-items: center; gap: .75rem; padding: .72rem 1rem; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; transition: border-color .15s, background .15s; }
   .custody-opt input { display: none; }
-  .custody-opt.selected-chris   { border-color: var(--chris);   background: rgba(192,57,43,.08); }
-  .custody-opt.selected-trev    { border-color: var(--trev);    background: rgba(36,113,163,.08); }
-  .custody-opt.selected-holiday { border-color: var(--holiday); background: rgba(142,68,173,.08); }
-  .custody-opt.selected-clear   { border-color: #90a4b8; background: var(--surface2); }
+  /* Updated custody option selection colors */
+  .custody-opt.selected-chris   { border-color: var(--chris);   background: rgba(93,173,226,.10); }
+  .custody-opt.selected-trev    { border-color: var(--trev);    background: rgba(155,89,182,.10); }
+  .custody-opt.selected-holiday { border-color: var(--holiday); background: rgba(30,132,73,.10); }
+  .custody-opt.selected-clear   { border-color: rgba(231,76,60,.40); background: rgba(231,76,60,.10); }
   .custody-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.10); }
   .custody-label { font-size: .9rem; color: var(--text); font-weight: 500; }
 
@@ -296,7 +318,7 @@
   <header>
     <button class="nav-btn" id="back-btn" onclick="changeMonth(-1)" style="visibility:hidden">&#8249;</button>
     <div class="header-left">
-      <div class="header-title">Sadie's Schedule</div>
+      <div class="header-title" id="header-title">Sadie's Schedule</div>
       <div class="header-user">
         <span id="user-display"></span>
         &nbsp;&middot;&nbsp;<a href="#" onclick="signOut();return false" style="color:var(--text2);text-decoration:none;font-size:.68rem">sign out</a>
@@ -304,6 +326,7 @@
       </div>
     </div>
     <div class="header-right">
+      <button class="switch-child-btn" id="switch-child-btn" onclick="toggleChild()"></button>
       <div class="month-label" id="month-label" style="visibility:hidden"></div>
       <button class="nav-btn" id="fwd-btn" onclick="changeMonth(1)" style="visibility:hidden">&#8250;</button>
     </div>
@@ -317,13 +340,14 @@
 
   <!-- CALENDAR PANEL -->
   <div class="tab-panel active" id="panel-cal">
-    <div class="legend">
+    <div class="legend" id="custody-legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--chris)"></div><span>Chris</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--trev)"></div><span>Trevor &amp; Jess</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--holiday)"></div><span>Holiday</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--danger);border-radius:50%"></div><span>Conflict</span></div>
     </div>
-    <div class="cal-wrapper">
+    <div id="overnight-bar"></div>
+    <div class="cal-wrapper" id="cal-wrapper">
       <div class="dow-row">
         <div class="dow-cell">Sun</div><div class="dow-cell">Mon</div><div class="dow-cell">Tue</div>
         <div class="dow-cell">Wed</div><div class="dow-cell">Thu</div><div class="dow-cell">Fri</div><div class="dow-cell">Sat</div>
@@ -367,7 +391,7 @@
 <div class="modal-bg" id="event-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Add Event</div>
+    <div class="modal-title" id="event-modal-title">Add Event</div>
     <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="ev-title" type="text" placeholder="e.g. Doctor appointment"></div>
     <div class="form-row">
       <label class="form-label">Date range</label>
@@ -430,7 +454,7 @@
       <label class="custody-opt" id="opt-chris">  <input type="radio" name="custody" value="chris">  <div class="custody-swatch" style="background:var(--chris)"></div>  <span class="custody-label">Chris</span></label>
       <label class="custody-opt" id="opt-trev">   <input type="radio" name="custody" value="trev">   <div class="custody-swatch" style="background:var(--trev)"></div>   <span class="custody-label">Trevor &amp; Jess</span></label>
       <label class="custody-opt" id="opt-holiday"><input type="radio" name="custody" value="holiday"><div class="custody-swatch" style="background:var(--holiday)"></div><span class="custody-label">Holiday</span></label>
-      <label class="custody-opt" id="opt-none">   <input type="radio" name="custody" value="">       <div class="custody-swatch" style="background:#90a4b8;border:1px solid #b0bec5"></div><span class="custody-label">Clear</span></label>
+      <label class="custody-opt" id="opt-none">   <input type="radio" name="custody" value="">       <div class="custody-swatch" style="background:#e74c3c;border:1px solid rgba(231,76,60,.5)"></div><span class="custody-label">Clear</span></label>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('custody-modal')">Cancel</button>
@@ -443,13 +467,26 @@
 <div class="modal-bg" id="task-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Add Task</div>
+    <div class="modal-title" id="task-modal-title">Add Task</div>
     <div class="form-row"><label class="form-label">Task</label><input class="form-input" id="task-title-input" type="text" placeholder="e.g. Pay for field trip ($12)"></div>
     <div class="form-row"><label class="form-label">Due date (optional)</label><input class="form-input" id="task-due-input" type="date"></div>
     <div class="form-row"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="task-notes-input" placeholder="Amount, deadline, link, etc."></textarea></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('task-modal')">Cancel</button>
-      <button class="btn-primary" onclick="saveTask()">Add Task</button>
+      <button class="btn-primary" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-bg" id="confirm-modal">
+  <div class="modal" style="max-height:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="confirm-title">Delete?</div>
+    <div id="confirm-body" style="font-size:.9rem;color:var(--text2);margin-bottom:1.25rem;line-height:1.5"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn-danger" id="confirm-ok-btn" style="flex:1;padding:.78rem;border-radius:10px;background:var(--danger);color:#fff;border:none;font-family:var(--font-body);font-weight:600;font-size:.93rem;cursor:pointer">Delete</button>
     </div>
   </div>
 </div>
@@ -485,9 +522,11 @@ window.__remove = remove;
 window.__push   = push;
 window.__get    = get;
 
-window.__listenCustody = cb => onValue(ref(db, "custody"), s => cb(s.val() || {}));
-window.__listenEvents  = cb => onValue(ref(db, "events"),  s => cb(s.val() || {}));
-window.__listenTasks   = cb => onValue(ref(db, "tasks"),   s => cb(s.val() || {}));
+window.__listenCustody     = cb => onValue(ref(db, "custody"),       s => cb(s.val() || {}));
+window.__listenEvents      = cb => onValue(ref(db, "events"),        s => cb(s.val() || {}));
+window.__listenTasks       = cb => onValue(ref(db, "tasks"),         s => cb(s.val() || {}));
+window.__listenLoganEvents = cb => onValue(ref(db, "loganEvents"),   s => cb(s.val() || {}));
+window.__listenLoganTasks  = cb => onValue(ref(db, "loganTasks"),    s => cb(s.val() || {}));
 
 window.__hasPin = async (name) => { const s = await get(ref(db, "pins/" + name)); return s.exists(); };
 window.__getPin = async (name) => { const s = await get(ref(db, "pins/" + name)); return s.exists() ? s.val() : null; };
@@ -501,18 +540,23 @@ if (!navigator.onLine) document.getElementById("offline-banner").classList.add("
 <script>
 // ─────────────────────────────────────────────────────
 // US HOLIDAYS 2025 & 2026
-// Format: "YYYY-MM-DD": "Holiday Name"
-// Add/remove entries here to customize.
 // ─────────────────────────────────────────────────────
 const US_HOLIDAYS = {
   "2025-01-01": "New Year's Day",
   "2025-01-20": "MLK Day",
+  "2025-02-14": "Valentine's Day",
   "2025-02-17": "Presidents' Day",
+  "2025-03-17": "St. Patrick's Day",
+  "2025-04-20": "Easter",
+  "2025-05-05": "Cinco de Mayo",
+  "2025-05-11": "Mother's Day",
   "2025-05-26": "Memorial Day",
+  "2025-06-15": "Father's Day",
   "2025-06-19": "Juneteenth",
   "2025-07-04": "Independence Day",
   "2025-09-01": "Labor Day",
   "2025-10-13": "Columbus Day",
+  "2025-10-31": "Halloween",
   "2025-11-11": "Veterans Day",
   "2025-11-27": "Thanksgiving",
   "2025-11-28": "Thanksgiving (Fri)",
@@ -521,12 +565,19 @@ const US_HOLIDAYS = {
   "2025-12-31": "New Year's Eve",
   "2026-01-01": "New Year's Day",
   "2026-01-19": "MLK Day",
+  "2026-02-14": "Valentine's Day",
   "2026-02-16": "Presidents' Day",
+  "2026-03-17": "St. Patrick's Day",
+  "2026-04-05": "Easter",
+  "2026-05-05": "Cinco de Mayo",
+  "2026-05-10": "Mother's Day",
   "2026-05-25": "Memorial Day",
   "2026-06-19": "Juneteenth",
+  "2026-06-21": "Father's Day",
   "2026-07-04": "Independence Day",
   "2026-09-07": "Labor Day",
   "2026-10-12": "Columbus Day",
+  "2026-10-31": "Halloween",
   "2026-11-11": "Veterans Day",
   "2026-11-26": "Thanksgiving",
   "2026-11-27": "Thanksgiving (Fri)",
@@ -537,9 +588,96 @@ const US_HOLIDAYS = {
 
 // Runtime state
 let view = { year: new Date().getFullYear(), month: new Date().getMonth() };
-let custody = {}, events = {}, tasks = {};
-let editKey = null, pendingDay = null, currentDayStr = "", custodyDay = "";
+let custody = {};
+// Separate data stores for each child
+let sadieEvents = {}, sadieTasks = {};
+let loganEvents = {}, loganTasks = {};
+// Active child state
+let activeChild = 'sadie'; // 'sadie' | 'logan'
+// Computed references (always use these in render functions)
+let events = {}, tasks = {};
+
+let editKey = null, editTaskKey = null, pendingDay = null, currentDayStr = "", custodyDay = "";
 let currentUser = "", pendingName = "";
+
+// Helper to get the current Firebase path prefix based on active child
+function eventsPath() { return activeChild === 'logan' ? 'loganEvents' : 'events'; }
+function tasksPath()  { return activeChild === 'logan' ? 'loganTasks'  : 'tasks'; }
+
+// Update computed events/tasks from active child
+function syncActiveChildData() {
+  events = activeChild === 'logan' ? loganEvents : sadieEvents;
+  tasks  = activeChild === 'logan' ? loganTasks  : sadieTasks;
+}
+
+// ── Child toggle (Trevor/Jess only) ──
+function isTrevJess() { return currentUser === 'Trevor' || currentUser === 'Jess'; }
+
+function updateChildUI() {
+  const btn = document.getElementById('switch-child-btn');
+  const headerTitle = document.getElementById('header-title');
+  const legendEl = document.getElementById('custody-legend');
+  const overnightBar = document.getElementById('overnight-bar');
+
+  // Switch button visibility
+  if (isTrevJess()) {
+    btn.style.display = 'block';
+    btn.textContent = activeChild === 'sadie' ? 'Switch to Logan' : 'Switch to Sadie';
+  } else {
+    btn.style.display = 'none';
+  }
+
+  // Header title
+  headerTitle.textContent = activeChild === 'sadie' ? "Sadie's Schedule" : "Logan's Schedule";
+
+  // Legend & overnight bar: only show for sadie
+  if (activeChild === 'sadie') {
+    legendEl.style.display = '';
+    if (isTrevJess()) {
+      overnightBar.style.display = '';
+      renderOvernightBar();
+    } else {
+      overnightBar.style.display = 'none';
+    }
+  } else {
+    legendEl.style.display = 'none';
+    overnightBar.style.display = 'none';
+  }
+}
+
+function toggleChild() {
+  activeChild = activeChild === 'sadie' ? 'logan' : 'sadie';
+  syncActiveChildData();
+  updateChildUI();
+  renderCalendar();
+  renderUpcoming();
+  renderTasks();
+  updateTabCounts();
+}
+
+// ── Overnight counter ──
+function renderOvernightBar() {
+  const bar = document.getElementById('overnight-bar');
+  if (!isTrevJess() || activeChild !== 'sadie') { bar.style.display = 'none'; return; }
+  bar.style.display = '';
+  const dim = new Date(view.year, view.month + 1, 0).getDate();
+  let trevNights = 0;
+  for (let day = 1; day <= dim; day++) {
+    const ds     = fmtDate(view.year, view.month, day);
+    const nextDs = fmtDate(view.year, view.month, day + 1 <= dim ? day + 1 : day); // last day stays same
+    const c      = custody[ds] || '';
+    const cNext  = custody[nextDs] || '';
+    let overnightOwner;
+    // Transition day = custody differs from next day, both non-empty
+    if (c && cNext && c !== cNext) {
+      overnightOwner = cNext; // overnight goes to arriving household
+    } else {
+      overnightOwner = c;
+    }
+    if (overnightOwner === 'trev') trevNights++;
+  }
+  bar.textContent = 'Sadie: ' + trevNights + ' night' + (trevNights !== 1 ? 's' : '') + ' with Trevor & Jess this month';
+}
 
 // PIN hash
 function hashPin(pin) {
@@ -574,7 +712,6 @@ function signOut() {
 // ── Change PIN ──
 function openChangePIN() {
   document.getElementById("change-error").textContent = "";
-  // Build the change pad fresh each time so it's always ready
   buildPinPad("change", async (pin, reset) => {
     await window.__setPin(currentUser, hashPin(pin));
     showApp();
@@ -593,7 +730,6 @@ async function handleWhoNext() {
   const hasPin = await window.__hasPin(name);
   if (hasPin) {
     document.getElementById("enter-pin-sub").innerHTML = "Enter your PIN to continue as <strong>" + esc(name) + "</strong>.";
-    // Clear error, show screen, then rebuild pad fresh
     document.getElementById("enter-error").textContent = "";
     showScreen("screen-enter-pin");
     buildPinPad("enter", async (pin, reset) => {
@@ -608,7 +744,6 @@ async function handleWhoNext() {
     });
   } else {
     document.getElementById("create-pin-sub").innerHTML = "Hi <strong>" + esc(name) + "</strong>! Set a 4-digit PIN. You'll use this every time you sign in.";
-    // Clear error, show screen, then rebuild pad fresh
     document.getElementById("create-error").textContent = "";
     showScreen("screen-create-pin");
     buildPinPad("create", async (pin, reset) => {
@@ -655,7 +790,7 @@ function clearPinPad(prefix) {
   const p = document.getElementById(prefix + "-pad");  if (p) p.innerHTML = "";
 }
 
-// Build PIN pads as soon as DOM is ready (fixes blank pad issue)
+// Build PIN pads as soon as DOM is ready
 function initPinPads() {
   buildPinPad("create", async (pin, reset) => {
     await window.__setPin(pendingName, hashPin(pin));
@@ -681,14 +816,45 @@ if (document.readyState === "loading") {
 function launchApp(name) {
   currentUser = name;
   document.getElementById("user-display").textContent = name;
-  showApp(); startListeners(); switchTab("cal"); renderCalendar();
+  activeChild = 'sadie';
+  showApp();
+  startListeners();
+  switchTab("cal");
+  renderCalendar();
+  updateChildUI();
 }
 
 // ── Firebase listeners ──
 function startListeners() {
-  window.__listenCustody(d => { custody = d; renderCalendar(); renderUpcoming(); });
-  window.__listenEvents(d  => { events  = d; renderCalendar(); renderUpcoming(); updateTabCounts(); });
-  window.__listenTasks(d   => { tasks   = d; renderTasks(); updateTabCounts(); });
+  window.__listenCustody(d => {
+    custody = d;
+    renderCalendar();
+    renderUpcoming();
+    renderOvernightBar();
+  });
+  window.__listenEvents(d => {
+    sadieEvents = d;
+    syncActiveChildData();
+    renderCalendar();
+    renderUpcoming();
+    updateTabCounts();
+  });
+  window.__listenTasks(d => {
+    sadieTasks = d;
+    syncActiveChildData();
+    renderTasks();
+    updateTabCounts();
+  });
+  window.__listenLoganEvents(d => {
+    loganEvents = d;
+    syncActiveChildData();
+    if (activeChild === 'logan') { renderCalendar(); renderUpcoming(); updateTabCounts(); }
+  });
+  window.__listenLoganTasks(d => {
+    loganTasks = d;
+    syncActiveChildData();
+    if (activeChild === 'logan') { renderTasks(); updateTabCounts(); }
+  });
 }
 
 // ── Tab counts ──
@@ -733,6 +899,27 @@ function changeMonth(d) {
   renderCalendar();
 }
 
+// Swipe support
+(function() {
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('DOMContentLoaded', () => {
+    const wrapper = document.getElementById('cal-wrapper');
+    if (!wrapper) return;
+    wrapper.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+    wrapper.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].screenX - touchStartX;
+      const dy = e.changedTouches[0].screenY - touchStartY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) changeMonth(1);
+        else changeMonth(-1);
+      }
+    }, { passive: true });
+  });
+})();
+
 function renderCalendar() {
   document.getElementById("month-label").textContent = MONTHS[view.month] + " " + view.year;
   const grid = document.getElementById("cal-grid");
@@ -741,7 +928,11 @@ function renderCalendar() {
   const dim   = new Date(view.year, view.month + 1, 0).getDate();
   const prev  = new Date(view.year, view.month, 0).getDate();
   const today = new Date(); today.setHours(0,0,0,0);
-  const evMap = buildEventsMap();
+  const evMap   = buildEventsMap();
+  const taskMap = buildTasksMap();
+
+  // Update child UI elements
+  updateChildUI();
 
   for (let i = first - 1; i >= 0; i--) {
     const el = document.createElement("div");
@@ -749,30 +940,72 @@ function renderCalendar() {
     el.innerHTML = "<div class=\"day-num\">" + (prev - i) + "</div>";
     grid.appendChild(el);
   }
+
   for (let day = 1; day <= dim; day++) {
-    const ds   = fmtDate(view.year, view.month, day);
-    const cust = custody[ds] || "";
-    const devs = evMap[ds] || [];
+    const ds      = fmtDate(view.year, view.month, day);
+    const nextDs  = fmtDate(view.year, view.month, day < dim ? day + 1 : day);
+    const cust    = custody[ds] || "";
+    const custNext= (day < dim) ? (custody[nextDs] || "") : "";
+    const devs    = evMap[ds]   || [];
+    const dayTasks= taskMap[ds] || [];
     const holiday = US_HOLIDAYS[ds] || "";
+
+    // Determine if this is a transition day
+    const isTransition = activeChild === 'sadie' && cust && custNext && cust !== custNext;
+
     const el = document.createElement("div");
-    // Holiday overrides custody color for background; custody still shows as bar
-    el.className = "cal-day" + (holiday ? " custody-holiday" : (cust ? " custody-" + cust : ""));
+
+    if (activeChild === 'sadie') {
+      if (isTransition) {
+        // Split gradient background for transition days
+        const topColor    = custodyTint(cust);
+        const bottomColor = custodyTint(custNext);
+        el.className = "cal-day";
+        el.style.background = "linear-gradient(to bottom, " + topColor + " 50%, " + bottomColor + " 50%)";
+        el.style.borderColor = "rgba(0,0,0,0.20)";
+      } else {
+        el.className = "cal-day" + (holiday ? " custody-holiday" : (cust ? " custody-" + cust : ""));
+      }
+    } else {
+      // Logan — no custody colors
+      el.className = "cal-day" + (holiday ? " custody-holiday" : "");
+    }
+
     if (new Date(view.year, view.month, day).getTime() === today.getTime()) el.classList.add("today");
 
     let html = "<div class=\"day-num\">" + day + "</div>";
-    // Show custody bar (even on holidays)
-    if (cust && !holiday) html += "<div class=\"custody-bar " + cust + "\"></div>";
-    // Holiday label in holiday color
+
+    if (activeChild === 'sadie') {
+      if (isTransition) {
+        html += "<div class=\"transition-label\">\u2195 Transition</div>";
+      } else if (cust && !holiday) {
+        html += "<div class=\"custody-bar " + cust + "\"></div>";
+      }
+    }
+
     if (holiday) html += "<div class=\"holiday-label\">" + esc(holiday) + "</div>";
 
-    devs.slice(0,2).forEach(ev => {
+    // Events
+    let chipsShown = 0;
+    devs.slice(0, 2).forEach(ev => {
       html += "<div class=\"event-chip " + (ev.overlap ? "overlap" : "mine") + "\">" + esc(ev.title) + "</div>";
+      chipsShown++;
     });
-    if (devs.length > 2) html += "<div class=\"more-events\">+" + (devs.length - 2) + " more</div>";
+
+    // Tasks
+    const taskSlots = 2 - chipsShown;
+    dayTasks.slice(0, Math.max(0, taskSlots)).forEach(t => {
+      html += "<div class=\"task-chip\">" + esc(t.title) + "</div>";
+    });
+
+    const totalExtra = (devs.length > 2 ? devs.length - 2 : 0) + (dayTasks.length > taskSlots ? dayTasks.length - taskSlots : 0);
+    if (totalExtra > 0) html += "<div class=\"more-events\">+" + totalExtra + " more</div>";
+
     el.innerHTML = html;
     el.addEventListener("click", () => openDayModal(ds, day, cust, devs, holiday));
     grid.appendChild(el);
   }
+
   const trail = (first + dim) % 7;
   for (let i = 1; i <= (trail === 0 ? 0 : 7 - trail); i++) {
     const el = document.createElement("div");
@@ -780,6 +1013,16 @@ function renderCalendar() {
     el.innerHTML = "<div class=\"day-num\">" + i + "</div>";
     grid.appendChild(el);
   }
+
+  // Update overnight bar after render
+  renderOvernightBar();
+}
+
+function custodyTint(c) {
+  if (c === 'chris')   return 'rgba(93,173,226,0.25)';
+  if (c === 'trev')    return 'rgba(155,89,182,0.25)';
+  if (c === 'holiday') return 'rgba(30,132,73,0.25)';
+  return 'rgba(255,255,255,0)';
 }
 
 function buildEventsMap() {
@@ -788,13 +1031,24 @@ function buildEventsMap() {
     if (!ev?.start || !ev?.end) continue;
     let cur = new Date(ev.start + "T12:00:00");
     const end = new Date(ev.end + "T12:00:00");
-    const ovlp = isOverlap(ev);
+    const ovlp = (activeChild === 'sadie') ? isOverlap(ev) : false;
     while (cur <= end) {
       const ds = cur.toISOString().slice(0,10);
       if (!map[ds]) map[ds] = [];
       map[ds].push({ key, title: ev.title, notes: ev.notes, overlap: ovlp });
       cur.setDate(cur.getDate() + 1);
     }
+  }
+  return map;
+}
+
+function buildTasksMap() {
+  const map = {};
+  for (const [key, t] of Object.entries(tasks)) {
+    if (!t?.dueDate || t.done) continue;
+    const ds = t.dueDate;
+    if (!map[ds]) map[ds] = [];
+    map[ds].push({ key, title: t.title });
   }
   return map;
 }
@@ -841,7 +1095,7 @@ function renderUpcoming() {
     group.items.forEach(([key, ev]) => {
       const startD = new Date(ev.start + "T12:00:00");
       const endD   = new Date(ev.end   + "T12:00:00");
-      const ovlp = isOverlap(ev);
+      const ovlp = (activeChild === 'sadie') ? isOverlap(ev) : false;
       const cust = custody[ev.start] || "";
       const custLabel = { chris: "Chris", trev: "Trevor & Jess", holiday: "Holiday" };
       const el = document.createElement("div");
@@ -852,7 +1106,6 @@ function renderUpcoming() {
       const body = document.createElement("div");
       body.className = "upcoming-event-body";
       let inner = "<div class=\"upcoming-event-title\">" + esc(ev.title) + "</div>";
-      // Date + time
       let dateStr = ev.start !== ev.end ? fmtDisplayDate(startD) + " \u2192 " + fmtDisplayDate(endD) : fmtDisplayDate(startD);
       if (ev.startTime || ev.endTime) {
         dateStr += " &middot; " + (ev.startTime || "") + (ev.endTime ? " \u2013 " + ev.endTime : "");
@@ -860,13 +1113,25 @@ function renderUpcoming() {
       inner += "<div class=\"upcoming-event-meta\">" + dateStr + "</div>";
       if (ev.notes) inner += "<div class=\"upcoming-event-meta\" style=\"margin-top:2px\">" + esc(ev.notes) + "</div>";
       if (ovlp) inner += "<span class=\"upcoming-badge overlap\">&#9888; Custody conflict</span>";
-      else if (cust) inner += "<span class=\"upcoming-badge " + cust + "\">Sadie with " + (custLabel[cust]||cust) + "</span>";
+      else if (cust && activeChild === 'sadie') inner += "<span class=\"upcoming-badge " + cust + "\">Sadie with " + (custLabel[cust]||cust) + "</span>";
       if (ev.addedBy) inner += "<div class=\"upcoming-event-meta\" style=\"margin-top:4px;opacity:.7\">Added by " + esc(ev.addedBy) + "</div>";
       body.innerHTML = inner;
+
+      // Action buttons
+      const actions = document.createElement("div");
+      actions.className = "upcoming-actions";
+      const editBtn = document.createElement("button");
+      editBtn.className = "task-edit"; editBtn.textContent = "\u270F\uFE0F";
+      editBtn.title = "Edit event";
+      editBtn.onclick = () => openEditEvent(key, ev);
       const del = document.createElement("button");
       del.className = "task-del"; del.textContent = "\u2715";
-      del.onclick = () => { window.__remove(window.__ref(window.__db, "events/" + key)); showToast("Event deleted"); };
-      el.appendChild(db2); el.appendChild(body); el.appendChild(del);
+      del.title = "Delete event";
+      del.onclick = () => confirmDelete("Delete Event", "Are you sure you want to delete "" + ev.title + ""? This cannot be undone.", () => { window.__remove(window.__ref(window.__db, eventsPath() + "/" + key)); showToast("Event deleted"); });
+      actions.appendChild(editBtn);
+      actions.appendChild(del);
+
+      el.appendChild(db2); el.appendChild(body); el.appendChild(actions);
       container.appendChild(el);
     });
   }
@@ -882,22 +1147,30 @@ function openDayModal(ds, day, cust, devs, holiday) {
   document.getElementById("day-modal-title").textContent = label + (holiday ? " — " + holiday : "");
   const cc = { chris:"var(--chris)", trev:"var(--trev)", holiday:"var(--holiday)", "":"var(--text2)" };
   const cl = { chris:"Chris", trev:"Trevor & Jess", holiday:"Holiday", "":"Not set" };
-  let html = "<div class=\"custody-block-info\" style=\"border-left:3px solid " + (cc[cust]||"var(--border)") + "\">" +
-    "<span style=\"font-weight:600;color:var(--text)\">Sadie is with: </span>" +
-    "<span style=\"color:" + (cc[cust]||"var(--text2)") + ";font-weight:500\">" + (cl[cust]||"Not set") + "</span>" +
-    "<br><a href=\"#\" style=\"font-size:.75rem;color:var(--accent);text-decoration:none\" onclick=\"openCustodyModalForDay('" + ds + "','" + esc(label) + "');return false\">Change custody &rarr;</a></div>";
+  let html = "";
+
+  if (activeChild === 'sadie') {
+    html += "<div class=\"custody-block-info\" style=\"border-left:3px solid " + (cc[cust]||"var(--border)") + "\">" +
+      "<span style=\"font-weight:600;color:var(--text)\">Sadie is with: </span>" +
+      "<span style=\"color:" + (cc[cust]||"var(--text2)") + ";font-weight:500\">" + (cl[cust]||"Not set") + "</span>" +
+      "<br><a href=\"#\" style=\"font-size:.75rem;color:var(--accent);text-decoration:none\" onclick=\"openCustodyModalForDay('" + ds + "','" + esc(label) + "');return false\">Change custody &rarr;</a></div>";
+  }
 
   if (devs.length === 0) {
     html += "<div style=\"color:var(--text2);font-size:.83rem;text-align:center;padding:1rem 0\">No events this day</div>";
   } else {
     devs.forEach(ev => {
       const d = events[ev.key];
+      if (!d) return;
       const rng = d.start === d.end ? d.start : d.start + " \u2192 " + d.end;
       const timeStr = (d.startTime || d.endTime) ? " &middot; " + (d.startTime||"") + (d.endTime ? "\u2013"+d.endTime : "") : "";
       const ovNote = ev.overlap ? "<span style=\"color:var(--danger);font-weight:600\"> &middot; Custody conflict</span>" : "";
       html += "<div class=\"detail-event\"><div class=\"detail-event-title\">" + esc(ev.title) + ovNote + "</div>" +
         "<div class=\"detail-event-meta\">" + rng + timeStr + (d.notes ? " &middot; " + esc(d.notes) : "") + "</div>" +
-        "<button class=\"detail-event-del\" onclick=\"deleteEvent('" + ev.key + "')\">&#x2715;</button></div>";
+        "<div class=\"detail-event-actions\">" +
+        "<button class=\"detail-event-edit\" title=\"Edit\" onclick=\"openEditEventFromDay('" + ev.key + "')\">&#x270F;&#xFE0F;</button>" +
+        "<button class=\"detail-event-del\" onclick=\"deleteEvent('" + ev.key + "')\">&#x2715;</button>" +
+        "</div></div>";
     });
   }
   document.getElementById("day-modal-body").innerHTML = html;
@@ -906,9 +1179,18 @@ function openDayModal(ds, day, cust, devs, holiday) {
 function openAddEventForDay() { pendingDay = currentDayStr; closeModal("day-modal"); openAddEvent(); }
 function openAddTaskForDay()  { pendingDay = currentDayStr; closeModal("day-modal"); openTaskModal(); }
 
+// Edit event from day modal
+function openEditEventFromDay(key) {
+  const ev = events[key];
+  if (!ev) return;
+  closeModal("day-modal");
+  openEditEvent(key, ev);
+}
+
 // ── Event modal ──
 function openAddEvent() {
   editKey = null;
+  document.getElementById("event-modal-title").textContent = "Add Event";
   document.getElementById("ev-title").value = "";
   const d = pendingDay || fmtDate(view.year, view.month, new Date().getDate());
   document.getElementById("ev-start").value = d;
@@ -925,7 +1207,27 @@ function openAddEvent() {
   });
   pendingDay = null;
 }
+
+function openEditEvent(key, ev) {
+  editKey = key;
+  document.getElementById("event-modal-title").textContent = "Edit Event";
+  document.getElementById("ev-title").value      = ev.title || "";
+  document.getElementById("ev-start").value      = ev.start || "";
+  document.getElementById("ev-end").value        = ev.end   || "";
+  document.getElementById("ev-start-time").value = ev.startTime || "";
+  document.getElementById("ev-end-time").value   = ev.endTime   || "";
+  document.getElementById("ev-notes").value      = ev.notes || "";
+  document.getElementById("overlap-warning").classList.remove("show");
+  document.getElementById("event-modal").classList.add("open");
+  ["ev-start","ev-end"].forEach(id => {
+    const el = document.getElementById(id);
+    el.removeEventListener("change", checkOvlp);
+    el.addEventListener("change", checkOvlp);
+  });
+}
+
 function checkOvlp() {
+  if (activeChild !== 'sadie') return;
   const s = document.getElementById("ev-start").value;
   const e = document.getElementById("ev-end").value;
   if (s && e) document.getElementById("overlap-warning").classList.toggle("show", isOverlap({ start: s, end: e }));
@@ -940,13 +1242,18 @@ function saveEvent() {
   if (!title || !start || !end) { showToast("Please fill in title and dates"); return; }
   if (end < start) { showToast("End can't be before start"); return; }
   const p = { title, start, end, startTime, endTime, notes, addedBy: currentUser };
-  editKey ? window.__set(window.__ref(window.__db, "events/" + editKey), p)
-          : window.__push(window.__ref(window.__db, "events"), p);
+  editKey ? window.__set(window.__ref(window.__db, eventsPath() + "/" + editKey), p)
+          : window.__push(window.__ref(window.__db, eventsPath()), p);
   closeModal("event-modal"); showToast("Event saved");
 }
 function deleteEvent(key) {
-  window.__remove(window.__ref(window.__db, "events/" + key));
-  closeModal("day-modal"); showToast("Event deleted");
+  const ev = events[key];
+  const name = ev ? ev.title : "this event";
+  closeModal("day-modal");
+  confirmDelete("Delete Event", "Are you sure you want to delete "" + name + ""? This cannot be undone.", () => {
+    window.__remove(window.__ref(window.__db, eventsPath() + "/" + key));
+    showToast("Event deleted");
+  });
 }
 
 // ── Custody modal ──
@@ -985,7 +1292,6 @@ function saveCustody() {
   if (!from || !to) { showToast("Please set a date range"); return; }
   if (to < from) { showToast("End date can't be before start"); return; }
 
-  // Apply to all dates in range
   let cur = new Date(from + "T12:00:00");
   const end = new Date(to + "T12:00:00");
   while (cur <= end) {
@@ -999,6 +1305,8 @@ function saveCustody() {
 
 // ── Tasks ──
 function openTaskModal() {
+  editTaskKey = null;
+  document.getElementById("task-modal-title").textContent = "Add Task";
   document.getElementById("task-title-input").value = "";
   document.getElementById("task-notes-input").value = "";
   document.getElementById("task-due-input").value = pendingDay || "";
@@ -1006,30 +1314,59 @@ function openTaskModal() {
   setTimeout(() => document.getElementById("task-title-input").focus(), 280);
   pendingDay = null;
 }
+
+function openEditTask(key, task) {
+  editTaskKey = key;
+  document.getElementById("task-modal-title").textContent = "Edit Task";
+  document.getElementById("task-title-input").value = task.title || "";
+  document.getElementById("task-notes-input").value = task.notes || "";
+  document.getElementById("task-due-input").value   = task.dueDate || "";
+  document.getElementById("task-modal").classList.add("open");
+  setTimeout(() => document.getElementById("task-title-input").focus(), 280);
+}
+
 document.getElementById("task-title-input").addEventListener("keydown", e => { if (e.key === "Enter") saveTask(); });
+
 function saveTask() {
   const title   = document.getElementById("task-title-input").value.trim();
   const notes   = document.getElementById("task-notes-input").value.trim();
   const dueDate = document.getElementById("task-due-input").value;
   if (!title) { showToast("Please enter a task"); return; }
-  window.__push(window.__ref(window.__db, "tasks"), {
-    title, notes, dueDate, done: false, addedBy: currentUser, addedAt: new Date().toISOString()
-  });
-  closeModal("task-modal"); showToast("Task added");
+  if (editTaskKey) {
+    const existing = tasks[editTaskKey];
+    const updated = Object.assign({}, existing, { title, notes, dueDate });
+    window.__set(window.__ref(window.__db, tasksPath() + "/" + editTaskKey), updated);
+    showToast("Task updated");
+  } else {
+    window.__push(window.__ref(window.__db, tasksPath()), {
+      title, notes, dueDate, done: false, addedBy: currentUser, addedAt: new Date().toISOString()
+    });
+    showToast("Task added");
+  }
+  closeModal("task-modal");
 }
+
 function toggleTask(key) {
   const t = tasks[key]; if (!t) return;
   if (t.done) {
-    window.__set(window.__ref(window.__db, "tasks/" + key + "/done"), false);
-    window.__remove(window.__ref(window.__db, "tasks/" + key + "/completedBy"));
-    window.__remove(window.__ref(window.__db, "tasks/" + key + "/completedAt"));
+    window.__set(window.__ref(window.__db, tasksPath() + "/" + key + "/done"), false);
+    window.__remove(window.__ref(window.__db, tasksPath() + "/" + key + "/completedBy"));
+    window.__remove(window.__ref(window.__db, tasksPath() + "/" + key + "/completedAt"));
   } else {
-    window.__set(window.__ref(window.__db, "tasks/" + key + "/done"), true);
-    window.__set(window.__ref(window.__db, "tasks/" + key + "/completedBy"), currentUser);
-    window.__set(window.__ref(window.__db, "tasks/" + key + "/completedAt"), new Date().toISOString());
+    window.__set(window.__ref(window.__db, tasksPath() + "/" + key + "/done"), true);
+    window.__set(window.__ref(window.__db, tasksPath() + "/" + key + "/completedBy"), currentUser);
+    window.__set(window.__ref(window.__db, tasksPath() + "/" + key + "/completedAt"), new Date().toISOString());
   }
 }
-function deleteTask(key) { window.__remove(window.__ref(window.__db, "tasks/" + key)); showToast("Task removed"); }
+function deleteTask(key) {
+  const t = tasks[key];
+  const name = t ? t.title : "this task";
+  confirmDelete("Delete Task", "Are you sure you want to delete "" + name + ""? This cannot be undone.", () => {
+    window.__remove(window.__ref(window.__db, tasksPath() + "/" + key));
+    showToast("Task removed");
+  });
+}
+
 function renderTasks() {
   const openList = document.getElementById("tasks-open-list");
   const doneList = document.getElementById("tasks-done-list");
@@ -1037,7 +1374,6 @@ function renderTasks() {
   const todayStr = new Date().toISOString().slice(0,10);
   const all  = Object.entries(tasks);
   const open = all.filter(([,t]) => !t.done).sort(([,a],[,b]) => {
-    // Sort overdue first, then by due date, then by addedAt
     const aOverdue = a.dueDate && a.dueDate < todayStr;
     const bOverdue = b.dueDate && b.dueDate < todayStr;
     if (aOverdue && !bOverdue) return -1;
@@ -1046,13 +1382,14 @@ function renderTasks() {
     if (a.dueDate) return -1; if (b.dueDate) return 1;
     return (a.addedAt||"").localeCompare(b.addedAt||"");
   });
-  const done = all.filter(([,t]) =>  t.done).sort(([,a],[,b]) => (b.completedAt||"").localeCompare(a.completedAt||""));
+  const done = all.filter(([,t]) => t.done).sort(([,a],[,b]) => (b.completedAt||"").localeCompare(a.completedAt||""));
 
   openList.innerHTML = open.length === 0 ? "<div class=\"tasks-empty\">No open tasks \u2014 all caught up!</div>" : "";
   open.forEach(([k,t]) => openList.appendChild(buildTaskEl(k,t,todayStr)));
   document.getElementById("tasks-done-section").style.display = done.length === 0 ? "none" : "";
   done.forEach(([k,t]) => doneList.appendChild(buildTaskEl(k,t,todayStr)));
 }
+
 function buildTaskEl(key, task, todayStr) {
   const overdue = !task.done && task.dueDate && task.dueDate < todayStr;
   const el = document.createElement("div");
@@ -1064,7 +1401,6 @@ function buildTaskEl(key, task, todayStr) {
   body.className = "task-body";
   let inner = "<div class=\"task-title\">" + esc(task.title) + "</div>";
   if (task.notes) inner += "<div class=\"task-sub\">" + esc(task.notes) + "</div>";
-  // Due date display
   if (task.dueDate && !task.done) {
     const dueD = new Date(task.dueDate + "T12:00:00");
     const dueStr = dueD.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -1080,15 +1416,28 @@ function buildTaskEl(key, task, todayStr) {
     inner += "<div class=\"task-sub\" style=\"opacity:.65;margin-top:3px\">Added by " + esc(task.addedBy) + "</div>";
   }
   body.innerHTML = inner;
+
+  const editBtn = document.createElement("button");
+  editBtn.className = "task-edit"; editBtn.textContent = "\u270F\uFE0F";
+  editBtn.title = "Edit task";
+  editBtn.onclick = () => openEditTask(key, task);
+
   const del = document.createElement("button");
   del.className = "task-del"; del.textContent = "\u2715";
   del.onclick = () => deleteTask(key);
-  el.appendChild(check); el.appendChild(body); el.appendChild(del);
+
+  el.appendChild(check); el.appendChild(body); el.appendChild(editBtn); el.appendChild(del);
   return el;
 }
 
 // ── Helpers ──
 function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+function confirmDelete(title, body, onConfirm) {
+  document.getElementById("confirm-title").textContent = title;
+  document.getElementById("confirm-body").textContent = body;
+  document.getElementById("confirm-ok-btn").onclick = () => { closeModal("confirm-modal"); onConfirm(); };
+  document.getElementById("confirm-modal").classList.add("open");
+}
 function fmtDate(y, m, d) { return y + "-" + String(m+1).padStart(2,"0") + "-" + String(d).padStart(2,"0"); }
 function showToast(msg) {
   const t = document.getElementById("toast");
