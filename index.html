@@ -106,8 +106,17 @@
   .legend-item { display: flex; align-items: center; gap: .35rem; font-size: .7rem; color: var(--text2); font-weight: 500; }
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
-  /* Overnight bar */
-  #overnight-bar { display: none; padding: .42rem 1rem; background: rgba(155,89,182,.08); border-bottom: 1px solid rgba(155,89,182,.18); font-size: .74rem; color: #5d2d8a; font-weight: 500; text-align: center; }
+  /* Overnight tally modal */
+  .overnight-section { background: var(--surface2); border-radius: 10px; padding: .85rem 1rem; margin-bottom: .75rem; }
+  .overnight-section-title { font-size: .73rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); margin-bottom: .5rem; }
+  .overnight-row { display: flex; justify-content: space-between; align-items: baseline; padding: .25rem 0; font-size: .9rem; }
+  .overnight-row .label { color: var(--text); }
+  .overnight-row .count { font-weight: 600; color: var(--text); }
+  .overnight-row.trev .label::before  { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: var(--trev); margin-right: .55rem; vertical-align: middle; }
+  .overnight-row.chris .label::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: var(--chris); margin-right: .55rem; vertical-align: middle; }
+  .overnight-row.holiday .label::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: var(--holiday); margin-right: .55rem; vertical-align: middle; }
+  .overnight-row.unset .label::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: #cdd4dd; margin-right: .55rem; vertical-align: middle; }
+  .overnight-split { font-size: .78rem; color: var(--text2); margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--border); }
 
   /* PANELS */
   .tab-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
@@ -152,7 +161,8 @@
   .upcoming-empty { text-align: center; color: var(--text2); font-size: .85rem; padding: 2.5rem 0; }
   .upcoming-month-label { font-size: .68rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text2); margin: 1.25rem 0 .5rem; padding: 0 .1rem; }
   .upcoming-month-label:first-child { margin-top: 0; }
-  .upcoming-event { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: .85rem 1rem; margin-bottom: .5rem; display: flex; align-items: flex-start; gap: .85rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .upcoming-event { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: .85rem 1rem; margin-bottom: .5rem; display: flex; align-items: flex-start; gap: .85rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); cursor: pointer; }
+  .upcoming-event:hover { background: var(--surface2); }
   .upcoming-date-block { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 44px; background: var(--surface2); border-radius: 8px; padding: .4rem .3rem; flex-shrink: 0; }
   .upcoming-month-sm { font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); }
   .upcoming-day-num { font-size: 1.3rem; font-weight: 700; color: var(--text); line-height: 1.1; }
@@ -181,7 +191,7 @@
   .task-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #b0bec5; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, border-color .15s; margin-top: 1px; }
   .task-check.checked { background: var(--success); border-color: var(--success); }
   .task-check.checked::after { content: '✓'; color: #fff; font-size: .72rem; font-weight: 700; }
-  .task-body { flex: 1; min-width: 0; }
+  .task-body { flex: 1; min-width: 0; cursor: pointer; }
   .task-title { font-size: .92rem; font-weight: 500; color: var(--text); line-height: 1.35; }
   .task-item.done .task-title { text-decoration: line-through; color: var(--text2); }
   .task-item.overdue .task-title { color: var(--danger); }
@@ -192,8 +202,6 @@
   .task-stamp { font-size: .7rem; color: var(--success); margin-top: 5px; line-height: 1.4; }
   .task-del { background: none; border: none; color: var(--text2); font-size: .85rem; cursor: pointer; padding: 2px 5px; flex-shrink: 0; opacity: .5; }
   .task-del:hover { opacity: 1; }
-  .task-edit { background: none; border: none; color: var(--text2); font-size: .82rem; cursor: pointer; padding: 2px 5px; flex-shrink: 0; opacity: .5; }
-  .task-edit:hover { opacity: 1; }
   .tasks-empty { text-align: center; color: var(--text2); font-size: .85rem; padding: 1.5rem 0; }
 
   /* FAB */
@@ -231,12 +239,12 @@
   .btn-secondary:hover { background: var(--surface2); }
   .btn-danger { padding: .78rem 1.1rem; border-radius: 10px; border: 1.5px solid rgba(192,57,43,.4); background: transparent; color: var(--danger); font-family: var(--font-body); font-size: .93rem; cursor: pointer; }
 
-  .detail-event { background: var(--surface2); border-radius: 10px; padding: .75rem 1rem; margin-bottom: .5rem; position: relative; padding-right: 5rem; }
+  .detail-event { background: var(--surface2); border-radius: 10px; padding: .75rem 1rem; margin-bottom: .5rem; position: relative; padding-right: 2.5rem; cursor: pointer; }
+  .detail-event:hover { background: #d8dee6; }
   .detail-event-title { font-weight: 600; font-size: .92rem; color: var(--text); margin-bottom: .18rem; }
   .detail-event-meta { font-size: .75rem; color: var(--text2); }
   .detail-event-actions { position: absolute; right: .5rem; top: .65rem; display: flex; gap: 4px; }
   .detail-event-del { background: none; border: none; color: var(--text2); font-size: .95rem; cursor: pointer; padding: 2px 5px; }
-  .detail-event-edit { background: none; border: none; color: var(--text2); font-size: .9rem; cursor: pointer; padding: 2px 5px; }
   .custody-block-info { background: var(--surface2); border-radius: 10px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .88rem; color: var(--text2); }
 
   .custody-toggle { display: flex; flex-direction: column; gap: 7px; margin-bottom: 1rem; }
@@ -338,6 +346,7 @@
         <button class="options-btn" id="options-btn" onclick="toggleOptionsMenu(event)" aria-haspopup="true" aria-expanded="false" aria-label="Options">&#9881;</button>
         <div class="options-menu" id="options-menu" role="menu">
           <button class="options-item" id="options-switch-child" role="menuitem" onclick="optionsAction('switch')" style="display:none"></button>
+          <button class="options-item" id="options-overnights" role="menuitem" onclick="optionsAction('overnights')" style="display:none">Overnights tally</button>
           <button class="options-item" role="menuitem" onclick="optionsAction('changePIN')">Change PIN</button>
           <button class="options-item danger" role="menuitem" onclick="optionsAction('signOut')">Sign out</button>
         </div>
@@ -361,7 +370,6 @@
       <div class="legend-item"><div class="legend-dot" style="background:var(--holiday)"></div><span>Holiday</span></div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--danger);border-radius:50%"></div><span>Conflict</span></div>
     </div>
-    <div id="overnight-bar"></div>
     <div class="cal-wrapper" id="cal-wrapper">
       <div class="dow-row">
         <div class="dow-cell">Sun</div><div class="dow-cell">Mon</div><div class="dow-cell">Tue</div>
@@ -518,6 +526,18 @@
   </div>
 </div>
 
+<!-- OVERNIGHTS TALLY MODAL -->
+<div class="modal-bg" id="overnights-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Overnight tally</div>
+    <div id="overnights-body" style="font-size:.85rem;color:var(--text2);line-height:1.5"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('overnights-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM DELETE MODAL -->
 <div class="modal-bg" id="confirm-modal">
   <div class="modal" style="max-height:auto">
@@ -668,9 +688,9 @@ function isTrevJess() { return currentUser === 'Trevor' || currentUser === 'Jess
 
 function updateChildUI() {
   const switchItem = document.getElementById('options-switch-child');
+  const overnightsItem = document.getElementById('options-overnights');
   const headerTitle = document.getElementById('header-title');
   const legendEl = document.getElementById('custody-legend');
-  const overnightBar = document.getElementById('overnight-bar');
 
   // Switch menu item visibility
   if (switchItem) {
@@ -682,22 +702,17 @@ function updateChildUI() {
     }
   }
 
+  // Overnights menu item: Trevor/Jess only, and only when viewing Sadie
+  // (custody data is Sadie-specific)
+  if (overnightsItem) {
+    overnightsItem.style.display = (isTrevJess() && activeChild === 'sadie') ? 'block' : 'none';
+  }
+
   // Header title
   headerTitle.textContent = activeChild === 'sadie' ? "Sadie's Schedule" : "Logan's Schedule";
 
-  // Legend & overnight bar: only show for sadie
-  if (activeChild === 'sadie') {
-    legendEl.style.display = '';
-    if (isTrevJess()) {
-      overnightBar.style.display = '';
-      renderOvernightBar();
-    } else {
-      overnightBar.style.display = 'none';
-    }
-  } else {
-    legendEl.style.display = 'none';
-    overnightBar.style.display = 'none';
-  }
+  // Legend: only show for sadie
+  legendEl.style.display = activeChild === 'sadie' ? '' : 'none';
 }
 
 function toggleChild() {
@@ -710,28 +725,64 @@ function toggleChild() {
   updateTabCounts();
 }
 
-// ── Overnight counter ──
-function renderOvernightBar() {
-  const bar = document.getElementById('overnight-bar');
-  if (!isTrevJess() || activeChild !== 'sadie') { bar.style.display = 'none'; return; }
-  bar.style.display = '';
-  const dim = new Date(view.year, view.month + 1, 0).getDate();
-  let trevNights = 0;
-  for (let day = 1; day <= dim; day++) {
-    const ds     = fmtDate(view.year, view.month, day);
-    const nextDs = fmtDate(view.year, view.month, day + 1 <= dim ? day + 1 : day); // last day stays same
-    const c      = custody[ds] || '';
-    const cNext  = custody[nextDs] || '';
-    let overnightOwner;
-    // Transition day = custody differs from next day, both non-empty
-    if (c && cNext && c !== cNext) {
-      overnightOwner = cNext; // overnight goes to arriving household
-    } else {
-      overnightOwner = c;
-    }
-    if (overnightOwner === 'trev') trevNights++;
+// ── Overnight tally ──
+// Returns { trev, chris, holiday, unset } — count of nights in [start, end]
+// (inclusive, by date string) where the overnight belongs to each household.
+// On a transition day (custody changes the next day), the overnight is
+// credited to the arriving household.
+function tallyOvernights(startDs, endDs) {
+  const counts = { trev: 0, chris: 0, holiday: 0, unset: 0 };
+  const cur = new Date(startDs + 'T12:00:00');
+  const end = new Date(endDs   + 'T12:00:00');
+  while (cur <= end) {
+    const ds = cur.toISOString().slice(0, 10);
+    const next = new Date(cur); next.setDate(next.getDate() + 1);
+    const nextDs = next.toISOString().slice(0, 10);
+    const c     = custody[ds]     || '';
+    const cNext = custody[nextDs] || '';
+    const owner = (c && cNext && c !== cNext) ? cNext : c;
+    if (owner === 'trev')         counts.trev++;
+    else if (owner === 'chris')   counts.chris++;
+    else if (owner === 'holiday') counts.holiday++;
+    else                          counts.unset++;
+    cur.setDate(cur.getDate() + 1);
   }
-  bar.textContent = 'Sadie: ' + trevNights + ' night' + (trevNights !== 1 ? 's' : '') + ' with Trevor & Jess this month';
+  return counts;
+}
+
+function renderOvernightSection(title, counts) {
+  const total = counts.trev + counts.chris + counts.holiday + counts.unset;
+  const decided = counts.trev + counts.chris;
+  let split = '';
+  if (decided > 0) {
+    const trevPct  = Math.round((counts.trev  / decided) * 100);
+    const chrisPct = 100 - trevPct;
+    split = '<div class="overnight-split">Split (excluding holidays/unset): ' +
+      'Trevor &amp; Jess ' + trevPct + '% &middot; Chris ' + chrisPct + '%</div>';
+  }
+  return '<div class="overnight-section">' +
+    '<div class="overnight-section-title">' + esc(title) + ' &middot; ' + total + ' night' + (total !== 1 ? 's' : '') + '</div>' +
+    '<div class="overnight-row trev"><span class="label">Trevor &amp; Jess</span><span class="count">' + counts.trev + '</span></div>' +
+    '<div class="overnight-row chris"><span class="label">Chris</span><span class="count">' + counts.chris + '</span></div>' +
+    (counts.holiday ? '<div class="overnight-row holiday"><span class="label">Holiday</span><span class="count">' + counts.holiday + '</span></div>' : '') +
+    (counts.unset   ? '<div class="overnight-row unset"><span class="label">Unset</span><span class="count">' + counts.unset + '</span></div>' : '') +
+    split +
+  '</div>';
+}
+
+function openOvernightsModal() {
+  if (!isTrevJess() || activeChild !== 'sadie') return;
+  const monthStart = fmtDate(view.year, view.month, 1);
+  const monthEnd   = fmtDate(view.year, view.month, new Date(view.year, view.month + 1, 0).getDate());
+  const yearStart  = view.year + '-01-01';
+  const yearEnd    = view.year + '-12-31';
+  const monthLabel = MONTHS[view.month] + ' ' + view.year;
+  const yearLabel  = String(view.year);
+  const body = document.getElementById('overnights-body');
+  body.innerHTML =
+    renderOvernightSection(monthLabel, tallyOvernights(monthStart, monthEnd)) +
+    renderOvernightSection(yearLabel + ' (full year)', tallyOvernights(yearStart, yearEnd));
+  document.getElementById('overnights-modal').classList.add('open');
 }
 
 // PIN hash
@@ -782,9 +833,10 @@ function closeOptionsMenu() {
 }
 function optionsAction(action) {
   closeOptionsMenu();
-  if (action === 'switch')        toggleChild();
-  else if (action === 'changePIN') openChangePIN();
-  else if (action === 'signOut')   signOut();
+  if (action === 'switch')         toggleChild();
+  else if (action === 'overnights') openOvernightsModal();
+  else if (action === 'changePIN')  openChangePIN();
+  else if (action === 'signOut')    signOut();
 }
 document.addEventListener('click', e => {
   const wrap = document.querySelector('.options-wrap');
@@ -946,7 +998,6 @@ function startListeners() {
     custody = d;
     renderCalendar();
     renderUpcoming();
-    renderOvernightBar();
   });
   window.__listenEvents(d => {
     sadieEvents = d;
@@ -1184,9 +1235,6 @@ function renderCalendar() {
     el.innerHTML = "<div class=\"day-num\">" + i + "</div>";
     grid.appendChild(el);
   }
-
-  // Update overnight bar after render
-  renderOvernightBar();
 }
 
 function custodyTint(c) {
@@ -1288,18 +1336,19 @@ function renderUpcoming() {
       if (ev.addedBy) inner += "<div class=\"upcoming-event-meta\" style=\"margin-top:4px;opacity:.7\">Added by " + esc(ev.addedBy) + "</div>";
       body.innerHTML = inner;
 
-      // Action buttons
+      // Tap anywhere on the row to edit; the X stops propagation below.
+      el.title = "Tap to edit";
+      el.onclick = () => openEditEvent(key, ev);
+
       const actions = document.createElement("div");
       actions.className = "upcoming-actions";
-      const editBtn = document.createElement("button");
-      editBtn.className = "task-edit"; editBtn.textContent = "\u270F\uFE0F";
-      editBtn.title = "Edit event";
-      editBtn.onclick = () => openEditEvent(key, ev);
       const del = document.createElement("button");
       del.className = "task-del"; del.textContent = "\u2715";
       del.title = "Delete event";
-      del.onclick = () => confirmDelete("Delete Event", "Are you sure you want to delete \"" + ev.title + "\"? This cannot be undone.", () => { window.__remove(window.__ref(window.__db, eventsPath() + "/" + key)); showToast("Event deleted"); });
-      actions.appendChild(editBtn);
+      del.onclick = (e) => {
+        e.stopPropagation();
+        confirmDelete("Delete Event", "Are you sure you want to delete \"" + ev.title + "\"? This cannot be undone.", () => { window.__remove(window.__ref(window.__db, eventsPath() + "/" + key)); showToast("Event deleted"); });
+      };
       actions.appendChild(del);
 
       el.appendChild(db2); el.appendChild(body); el.appendChild(actions);
@@ -1336,11 +1385,10 @@ function openDayModal(ds, day, cust, devs, holiday) {
       const rng = d.start === d.end ? d.start : d.start + " \u2192 " + d.end;
       const timeStr = (d.startTime || d.endTime) ? " &middot; " + (d.startTime||"") + (d.endTime ? "\u2013"+d.endTime : "") : "";
       const ovNote = ev.overlap ? "<span style=\"color:var(--danger);font-weight:600\"> &middot; Custody conflict</span>" : "";
-      html += "<div class=\"detail-event\"><div class=\"detail-event-title\">" + esc(ev.title) + ovNote + "</div>" +
+      html += "<div class=\"detail-event\" title=\"Tap to edit\" onclick=\"openEditEventFromDay('" + ev.key + "')\"><div class=\"detail-event-title\">" + esc(ev.title) + ovNote + "</div>" +
         "<div class=\"detail-event-meta\">" + rng + timeStr + (d.notes ? " &middot; " + esc(d.notes) : "") + "</div>" +
         "<div class=\"detail-event-actions\">" +
-        "<button class=\"detail-event-edit\" title=\"Edit\" onclick=\"openEditEventFromDay('" + ev.key + "')\">&#x270F;&#xFE0F;</button>" +
-        "<button class=\"detail-event-del\" onclick=\"deleteEvent('" + ev.key + "')\">&#x2715;</button>" +
+        "<button class=\"detail-event-del\" onclick=\"event.stopPropagation();deleteEvent('" + ev.key + "')\">&#x2715;</button>" +
         "</div></div>";
     });
   }
@@ -1587,17 +1635,15 @@ function buildTaskEl(key, task, todayStr) {
     inner += "<div class=\"task-sub\" style=\"opacity:.65;margin-top:3px\">Added by " + esc(task.addedBy) + "</div>";
   }
   body.innerHTML = inner;
-
-  const editBtn = document.createElement("button");
-  editBtn.className = "task-edit"; editBtn.textContent = "\u270F\uFE0F";
-  editBtn.title = "Edit task";
-  editBtn.onclick = () => openEditTask(key, task);
+  body.title = "Tap to edit";
+  body.onclick = () => openEditTask(key, task);
 
   const del = document.createElement("button");
   del.className = "task-del"; del.textContent = "\u2715";
-  del.onclick = () => deleteTask(key);
+  del.title = "Delete task";
+  del.onclick = (e) => { e.stopPropagation(); deleteTask(key); };
 
-  el.appendChild(check); el.appendChild(body); el.appendChild(editBtn); el.appendChild(del);
+  el.appendChild(check); el.appendChild(body); el.appendChild(del);
   return el;
 }
 
