@@ -725,14 +725,25 @@ function cancelChangePIN() { showApp(); }
 async function handleWhoNext() {
   const name = document.getElementById("user-select").value;
   if (!name) { document.getElementById("who-error").textContent = "Please select your name."; return; }
-  if (!window.__hasPin) { document.getElementById("who-error").textContent = "Still connecting… please try again in a moment."; return; }
   document.getElementById("who-error").textContent = "";
   pendingName = name;
+  // Wait up to 8 s for the Firebase module to finish loading
+  if (!window.__hasPin) {
+    document.getElementById("who-error").textContent = "Connecting…";
+    for (let i = 0; i < 40 && !window.__hasPin; i++) {
+      await new Promise(r => setTimeout(r, 200));
+    }
+    document.getElementById("who-error").textContent = "";
+  }
+  if (!window.__hasPin) {
+    document.getElementById("who-error").textContent = "Could not connect. Check your internet and try again.";
+    return;
+  }
   let hasPin;
   try {
     hasPin = await window.__hasPin(name);
   } catch(err) {
-    document.getElementById("who-error").textContent = "Could not connect to database. Check your internet and try again.";
+    document.getElementById("who-error").textContent = "Could not connect. Check your internet and try again.";
     return;
   }
   if (hasPin) {
