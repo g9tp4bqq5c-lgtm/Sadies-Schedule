@@ -728,7 +728,13 @@ async function handleWhoNext() {
   if (!window.__hasPin) { document.getElementById("who-error").textContent = "Still connecting… please try again in a moment."; return; }
   document.getElementById("who-error").textContent = "";
   pendingName = name;
-  const hasPin = await window.__hasPin(name);
+  let hasPin;
+  try {
+    hasPin = await window.__hasPin(name);
+  } catch(err) {
+    document.getElementById("who-error").textContent = "Could not connect to database. Check your internet and try again.";
+    return;
+  }
   if (hasPin) {
     document.getElementById("enter-pin-sub").innerHTML = "Enter your PIN to continue as <strong>" + esc(name) + "</strong>.";
     document.getElementById("enter-error").textContent = "";
