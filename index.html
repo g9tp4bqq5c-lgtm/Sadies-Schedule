@@ -257,6 +257,26 @@
   .custody-opt.selected-clear   { border-color: rgba(231,76,60,.40); background: rgba(231,76,60,.10); }
   .custody-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.10); }
   .custody-label { font-size: .9rem; color: var(--text); font-weight: 500; }
+  .cust-transition-row { display: flex; align-items: center; gap: .55rem; margin-top: .65rem; font-size: .82rem; color: var(--text); cursor: pointer; }
+  .cust-transition-row input { margin: 0; cursor: pointer; }
+
+  /* Recurrence picker (mini calendar with valid recurrence dates highlighted) */
+  .recur-cal { background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: .55rem; margin-top: .35rem; }
+  .recur-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .4rem; padding: 0 .15rem; }
+  .recur-cal-month { font-weight: 600; font-size: .9rem; color: var(--text); }
+  .recur-cal-nav { background: transparent; border: none; cursor: pointer; padding: .2rem .55rem; color: var(--text2); font-size: 1.1rem; line-height: 1; border-radius: 6px; }
+  .recur-cal-nav:hover { color: var(--accent); background: var(--surface2); }
+  .recur-cal-nav:disabled { opacity: .35; cursor: not-allowed; }
+  .recur-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .recur-cal-dow { text-align: center; font-size: .62rem; font-weight: 700; color: var(--text2); padding: .15rem 0; letter-spacing: .04em; text-transform: uppercase; }
+  .recur-cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: .78rem; border-radius: 6px; color: var(--text); border: 1.5px solid transparent; }
+  .recur-cal-day.other { color: var(--text2); opacity: .35; }
+  .recur-cal-day.disabled { color: var(--text2); opacity: .35; }
+  .recur-cal-day.valid { background: rgba(155,89,182,.14); cursor: pointer; font-weight: 600; color: #5d2d8a; }
+  .recur-cal-day.valid:hover { background: rgba(155,89,182,.28); }
+  .recur-cal-day.selected { background: var(--accent); color: #fff; }
+  .recur-cal-day.start { border-color: var(--accent); }
+  .recur-summary { font-size: .78rem; color: var(--text2); margin-top: .5rem; padding-left: .15rem; }
 
   /* Options menu */
   .options-wrap { position: relative; display: inline-block; }
@@ -421,12 +441,27 @@
       <label class="form-label">Date range</label>
       <div class="date-row">
         <div><label class="form-label" style="font-size:.65rem">Start date</label><input class="form-input" id="ev-start" type="date"></div>
-        <div><label class="form-label" style="font-size:.65rem">End date</label><input class="form-input" id="ev-end" type="date"></div>
+        <div id="ev-end-wrap"><label class="form-label" style="font-size:.65rem" id="ev-end-label">End date</label><input class="form-input" id="ev-end" type="date"></div>
       </div>
       <div class="time-row">
         <div><label class="form-label" style="font-size:.65rem">Start time (optional)</label><input class="form-input" id="ev-start-time" type="time"></div>
         <div><label class="form-label" style="font-size:.65rem">End time (optional)</label><input class="form-input" id="ev-end-time" type="time"></div>
       </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Repeats</label>
+      <select class="form-select" id="ev-repeat" onchange="onRepeatChange('ev')">
+        <option value="">Doesn't repeat</option>
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="biweekly">Every 2 weeks</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+    <div class="form-row recur-picker" id="ev-recur-picker" style="display:none">
+      <label class="form-label">Repeats until — pick a highlighted date</label>
+      <div class="recur-cal" id="ev-recur-cal"></div>
+      <div class="recur-summary" id="ev-recur-summary"></div>
     </div>
     <div class="form-row"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="ev-notes" placeholder="Any details..."></textarea></div>
     <div class="overlap-warning" id="overlap-warning">&#9888; This event overlaps with the other parent's scheduled time.</div>
@@ -464,6 +499,9 @@
         <div><label class="form-label" style="font-size:.65rem">From</label><input class="form-input" id="cust-from" type="date"></div>
         <div><label class="form-label" style="font-size:.65rem">To</label><input class="form-input" id="cust-to" type="date"></div>
       </div>
+      <label class="cust-transition-row">
+        <input type="checkbox" id="cust-transition"> End date is the handoff/transition day
+      </label>
     </div>
     <!-- Transition times -->
     <div class="form-row">
@@ -494,6 +532,21 @@
     <div class="modal-title" id="task-modal-title">Add Task</div>
     <div class="form-row"><label class="form-label">Task</label><input class="form-input" id="task-title-input" type="text" placeholder="e.g. Pay for field trip ($12)"></div>
     <div class="form-row"><label class="form-label">Due date (optional)</label><input class="form-input" id="task-due-input" type="date"></div>
+    <div class="form-row">
+      <label class="form-label">Repeats</label>
+      <select class="form-select" id="task-repeat" onchange="onRepeatChange('task')">
+        <option value="">Doesn't repeat</option>
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="biweekly">Every 2 weeks</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+    <div class="form-row recur-picker" id="task-recur-picker" style="display:none">
+      <label class="form-label">Repeats until — pick a highlighted date</label>
+      <div class="recur-cal" id="task-recur-cal"></div>
+      <div class="recur-summary" id="task-recur-summary"></div>
+    </div>
     <div class="form-row"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="task-notes-input" placeholder="Amount, deadline, link, etc."></textarea></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('task-modal')">Cancel</button>
@@ -596,6 +649,7 @@ const listen = (path, cb, label) =>
   onValue(ref(db, path), s => cb(s.val() || {}), err => reportFbError("Load " + label, err));
 
 window.__listenCustody     = cb => listen("custody",     cb, "custody");
+window.__listenTransitions = cb => listen("transitions", cb, "transitions");
 window.__listenEvents      = cb => listen("events",      cb, "Sadie's events");
 window.__listenTasks       = cb => listen("tasks",       cb, "Sadie's tasks");
 window.__listenLoganEvents = cb => listen("loganEvents", cb, "Logan's events");
@@ -661,7 +715,7 @@ const US_HOLIDAYS = {
 
 // Runtime state
 let view = { year: new Date().getFullYear(), month: new Date().getMonth() };
-let custody = {};
+let custody = {}, transitions = {};
 // Separate data stores for each child
 let sadieEvents = {}, sadieTasks = {};
 let loganEvents = {}, loganTasks = {};
@@ -999,6 +1053,10 @@ function startListeners() {
     renderCalendar();
     renderUpcoming();
   });
+  window.__listenTransitions(d => {
+    transitions = d;
+    renderCalendar();
+  });
   window.__listenEvents(d => {
     sadieEvents = d;
     syncActiveChildData();
@@ -1172,8 +1230,12 @@ function renderCalendar() {
     const dayTasks= taskMap[ds] || [];
     const holiday = US_HOLIDAYS[ds] || "";
 
-    // Determine if this is a transition day
-    const isTransition = activeChild === 'sadie' && cust && custNext && cust !== custNext;
+    // Determine if this is a transition day. Auto-detected when custody changes
+    // tomorrow; explicitly flagged via the custody modal "End date is the
+    // handoff day" checkbox (transitions[ds] === true).
+    const isTransition = activeChild === 'sadie' && cust && (
+      transitions[ds] === true || (custNext && cust !== custNext)
+    );
 
     const el = document.createElement("div");
 
@@ -1417,13 +1479,12 @@ function openAddEvent() {
   document.getElementById("ev-start-time").value = "";
   document.getElementById("ev-end-time").value   = "";
   document.getElementById("ev-notes").value = "";
+  document.getElementById("ev-repeat").value = "";
+  recurState.ev = {};
+  onRepeatChange("ev");
   document.getElementById("overlap-warning").classList.remove("show");
   document.getElementById("event-modal").classList.add("open");
-  ["ev-start","ev-end"].forEach(id => {
-    const el = document.getElementById(id);
-    el.removeEventListener("change", checkOvlp);
-    el.addEventListener("change", checkOvlp);
-  });
+  attachEventModalListeners();
   pendingDay = null;
 }
 
@@ -1436,13 +1497,33 @@ function openEditEvent(key, ev) {
   document.getElementById("ev-start-time").value = ev.startTime || "";
   document.getElementById("ev-end-time").value   = ev.endTime   || "";
   document.getElementById("ev-notes").value      = ev.notes || "";
+  // Editing applies to a single instance, so don't carry over a recurrence
+  // selection — the user can re-pick to extend the series.
+  document.getElementById("ev-repeat").value = "";
+  recurState.ev = {};
+  onRepeatChange("ev");
   document.getElementById("overlap-warning").classList.remove("show");
   document.getElementById("event-modal").classList.add("open");
+  attachEventModalListeners();
+}
+
+function attachEventModalListeners() {
   ["ev-start","ev-end"].forEach(id => {
     const el = document.getElementById(id);
     el.removeEventListener("change", checkOvlp);
     el.addEventListener("change", checkOvlp);
   });
+  // When the start date changes while a recurrence is active, the picker's
+  // valid dates need to be recomputed.
+  const startEl = document.getElementById("ev-start");
+  startEl.removeEventListener("change", recurStartChanged_ev);
+  startEl.addEventListener("change", recurStartChanged_ev);
+}
+function recurStartChanged_ev() {
+  if (recurFreq("ev")) onRepeatChange("ev");
+}
+function recurStartChanged_task() {
+  if (recurFreq("task")) onRepeatChange("task");
 }
 
 function checkOvlp() {
@@ -1451,6 +1532,167 @@ function checkOvlp() {
   const e = document.getElementById("ev-end").value;
   if (s && e) document.getElementById("overlap-warning").classList.toggle("show", isOverlap({ start: s, end: e }));
 }
+
+// ── Recurrence ──
+// Each picker keeps its own state (which month is being viewed, what the
+// chosen end date is). Keyed by the modal prefix ('ev' or 'task') so the
+// event modal and task modal can be open in sequence without colliding.
+const recurState = {};
+
+function isValidRecurEnd(start, end, repeat) {
+  if (!start || !end || !repeat) return false;
+  if (end < start) return false;
+  const s = new Date(start + 'T12:00:00');
+  const e = new Date(end   + 'T12:00:00');
+  if (repeat === 'daily') return true;
+  if (repeat === 'weekly') {
+    const days = Math.round((e - s) / 86400000);
+    return days % 7 === 0;
+  }
+  if (repeat === 'biweekly') {
+    const days = Math.round((e - s) / 86400000);
+    return days % 14 === 0;
+  }
+  if (repeat === 'monthly') {
+    // Same day-of-month, any number of whole months apart. Months that
+    // don't have the start day-of-month are invalid (e.g. start Jan 31,
+    // valid Feb 28? we say no — pick a different end date).
+    if (e.getDate() !== s.getDate()) return false;
+    const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+    return months >= 0;
+  }
+  return false;
+}
+
+function generateRecurDates(start, end, repeat) {
+  const out = [];
+  const s = new Date(start + 'T12:00:00');
+  const e = new Date(end   + 'T12:00:00');
+  let cur = new Date(s);
+  while (cur <= e) {
+    out.push(cur.toISOString().slice(0, 10));
+    if (repeat === 'daily')         cur.setDate(cur.getDate() + 1);
+    else if (repeat === 'weekly')   cur.setDate(cur.getDate() + 7);
+    else if (repeat === 'biweekly') cur.setDate(cur.getDate() + 14);
+    else if (repeat === 'monthly')  cur.setMonth(cur.getMonth() + 1);
+    else break;
+  }
+  return out;
+}
+
+function recurStartDs(prefix) {
+  if (prefix === 'ev')   return document.getElementById('ev-start').value;
+  if (prefix === 'task') return document.getElementById('task-due-input').value;
+  return '';
+}
+function recurFreq(prefix) {
+  return document.getElementById(prefix + '-repeat').value;
+}
+function recurEndDs(prefix) {
+  return (recurState[prefix] && recurState[prefix].end) || '';
+}
+
+// Called when the Repeats <select> changes, when the start date changes, or
+// when the modal opens. Shows/hides the picker, re-renders the calendar,
+// snaps any stale end date to a valid one.
+function onRepeatChange(prefix) {
+  const freq = recurFreq(prefix);
+  const picker = document.getElementById(prefix + '-recur-picker');
+  // The standalone "End date" input only makes sense for non-recurring
+  // multi-day events. Hide it when a frequency is chosen.
+  const endWrap = document.getElementById('ev-end-wrap');
+  if (prefix === 'ev' && endWrap) endWrap.style.display = freq ? 'none' : '';
+  if (!freq) {
+    picker.style.display = 'none';
+    if (recurState[prefix]) recurState[prefix].end = '';
+    return;
+  }
+  const start = recurStartDs(prefix);
+  if (!start) {
+    picker.style.display = 'block';
+    document.getElementById(prefix + '-recur-cal').innerHTML =
+      '<div class="recur-summary" style="padding:.6rem">Pick a start date first.</div>';
+    document.getElementById(prefix + '-recur-summary').textContent = '';
+    return;
+  }
+  // Initialize state for this picker
+  if (!recurState[prefix]) recurState[prefix] = {};
+  const st = recurState[prefix];
+  // Default: select the first occurrence (start itself = 1 occurrence)
+  if (!st.end || !isValidRecurEnd(start, st.end, freq)) st.end = start;
+  // View defaults to the month containing the chosen end date
+  const ed = new Date(st.end + 'T12:00:00');
+  st.viewYear  = ed.getFullYear();
+  st.viewMonth = ed.getMonth();
+  picker.style.display = 'block';
+  renderRecurCal(prefix);
+}
+
+function recurNav(prefix, dir) {
+  const st = recurState[prefix]; if (!st) return;
+  st.viewMonth += dir;
+  if (st.viewMonth > 11)  { st.viewMonth = 0;  st.viewYear++; }
+  if (st.viewMonth < 0)   { st.viewMonth = 11; st.viewYear--; }
+  renderRecurCal(prefix);
+}
+
+function renderRecurCal(prefix) {
+  const st = recurState[prefix]; if (!st) return;
+  const start = recurStartDs(prefix);
+  const freq  = recurFreq(prefix);
+  if (!start || !freq) return;
+  const cal = document.getElementById(prefix + '-recur-cal');
+  const summary = document.getElementById(prefix + '-recur-summary');
+  const startD = new Date(start + 'T12:00:00');
+
+  const first = new Date(st.viewYear, st.viewMonth, 1).getDay();
+  const dim   = new Date(st.viewYear, st.viewMonth + 1, 0).getDate();
+  const prev  = new Date(st.viewYear, st.viewMonth, 0).getDate();
+  const monthLabel = MONTHS[st.viewMonth] + ' ' + st.viewYear;
+
+  // Disable prev nav if the previous month is entirely before the start month
+  const prevDisabled = (st.viewYear < startD.getFullYear()) ||
+    (st.viewYear === startD.getFullYear() && st.viewMonth <= startD.getMonth());
+
+  let html = '<div class="recur-cal-header">' +
+    '<button type="button" class="recur-cal-nav" onclick="recurNav(\'' + prefix + '\', -1)"' + (prevDisabled ? ' disabled' : '') + '>&#8249;</button>' +
+    '<div class="recur-cal-month">' + monthLabel + '</div>' +
+    '<button type="button" class="recur-cal-nav" onclick="recurNav(\'' + prefix + '\', 1)">&#8250;</button>' +
+    '</div><div class="recur-cal-grid">';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d =>
+    html += '<div class="recur-cal-dow">' + d + '</div>');
+  for (let i = first - 1; i >= 0; i--)
+    html += '<div class="recur-cal-day other">' + (prev - i) + '</div>';
+  for (let day = 1; day <= dim; day++) {
+    const ds = fmtDate(st.viewYear, st.viewMonth, day);
+    const isStart = (ds === start);
+    const valid = isValidRecurEnd(start, ds, freq) && ds >= start;
+    const selected = (ds === st.end);
+    let cls = 'recur-cal-day';
+    if (valid) cls += ' valid';
+    else if (ds < start) cls += ' disabled';
+    if (selected) cls += ' selected';
+    if (isStart)  cls += ' start';
+    const click = valid ? ' onclick="recurPick(\'' + prefix + '\', \'' + ds + '\')"' : '';
+    html += '<div class="' + cls + '"' + click + '>' + day + '</div>';
+  }
+  const trail = (first + dim) % 7;
+  for (let i = 1; i <= (trail === 0 ? 0 : 7 - trail); i++)
+    html += '<div class="recur-cal-day other">' + i + '</div>';
+  html += '</div>';
+  cal.innerHTML = html;
+
+  // Summary line
+  const occ = generateRecurDates(start, st.end, freq).length;
+  const endLabel = new Date(st.end + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  summary.textContent = occ + ' occurrence' + (occ !== 1 ? 's' : '') + ' — last on ' + endLabel + '.';
+}
+
+function recurPick(prefix, ds) {
+  if (!recurState[prefix]) recurState[prefix] = {};
+  recurState[prefix].end = ds;
+  renderRecurCal(prefix);
+}
 function saveEvent() {
   const title = document.getElementById("ev-title").value.trim();
   const start = document.getElementById("ev-start").value;
@@ -1458,7 +1700,36 @@ function saveEvent() {
   const startTime = document.getElementById("ev-start-time").value;
   const endTime   = document.getElementById("ev-end-time").value;
   const notes = document.getElementById("ev-notes").value.trim();
-  if (!title || !start || !end) { showToast("Please fill in title and dates"); return; }
+  const repeat = document.getElementById("ev-repeat").value;
+
+  if (!title || !start) { showToast("Please fill in title and start date"); return; }
+
+  // Recurring path: each occurrence becomes its own single-day record.
+  // Edit mode applies only to the single instance you opened — we don't
+  // try to ripple changes through a synthetic "series".
+  if (repeat) {
+    const seriesEnd = recurEndDs("ev");
+    if (!seriesEnd || !isValidRecurEnd(start, seriesEnd, repeat)) {
+      showToast("Pick a highlighted date for the repeat-until."); return;
+    }
+    if (editKey) {
+      const p = { title, start, end: start, startTime, endTime, notes, addedBy: currentUser };
+      window.__set(window.__ref(window.__db, eventsPath() + "/" + editKey), p);
+      closeModal("event-modal"); showToast("Event saved");
+      return;
+    }
+    const dates = generateRecurDates(start, seriesEnd, repeat);
+    dates.forEach(d => {
+      const p = { title, start: d, end: d, startTime, endTime, notes, addedBy: currentUser };
+      window.__push(window.__ref(window.__db, eventsPath()), p);
+    });
+    closeModal("event-modal");
+    showToast("Saved " + dates.length + " event" + (dates.length !== 1 ? "s" : ""));
+    return;
+  }
+
+  // Non-recurring: existing multi-day behavior.
+  if (!end) { showToast("Please fill in title and dates"); return; }
   if (end < start) { showToast("End can't be before start"); return; }
   const p = { title, start, end, startTime, endTime, notes, addedBy: currentUser };
   editKey ? window.__set(window.__ref(window.__db, eventsPath() + "/" + editKey), p)
@@ -1483,6 +1754,7 @@ function openCustodyModalForDay(ds, label) {
   document.getElementById("cust-to").value   = ds;
   document.getElementById("cust-start-time").value = "18:00";
   document.getElementById("cust-end-time").value   = "18:00";
+  document.getElementById("cust-transition").checked = transitions[ds] === true;
   const cur = custody[ds] || "";
   document.querySelectorAll(".custody-opt").forEach(el => {
     el.classList.remove("selected-chris","selected-trev","selected-holiday","selected-clear");
@@ -1508,6 +1780,7 @@ function saveCustody() {
   const val = sel ? sel.value : "";
   const from = document.getElementById("cust-from").value;
   const to   = document.getElementById("cust-to").value;
+  const transitionEnd = document.getElementById("cust-transition").checked;
   if (!from || !to) { showToast("Please set a date range"); return; }
   if (to < from) { showToast("End date can't be before start"); return; }
 
@@ -1519,6 +1792,13 @@ function saveCustody() {
     else window.__remove(window.__ref(window.__db, "custody/" + ds));
     cur.setDate(cur.getDate() + 1);
   }
+  // The transition flag applies only to the final day of the range — that's
+  // the handoff day. Clearing custody also clears any transition flag there.
+  if (val && transitionEnd) {
+    window.__set(window.__ref(window.__db, "transitions/" + to), true);
+  } else {
+    window.__remove(window.__ref(window.__db, "transitions/" + to));
+  }
   closeModal("custody-modal"); showToast("Custody updated");
 }
 
@@ -1529,6 +1809,10 @@ function openTaskModal() {
   document.getElementById("task-title-input").value = "";
   document.getElementById("task-notes-input").value = "";
   document.getElementById("task-due-input").value = pendingDay || "";
+  document.getElementById("task-repeat").value = "";
+  recurState.task = {};
+  onRepeatChange("task");
+  attachTaskModalListeners();
   document.getElementById("task-modal").classList.add("open");
   setTimeout(() => document.getElementById("task-title-input").focus(), 280);
   pendingDay = null;
@@ -1540,8 +1824,18 @@ function openEditTask(key, task) {
   document.getElementById("task-title-input").value = task.title || "";
   document.getElementById("task-notes-input").value = task.notes || "";
   document.getElementById("task-due-input").value   = task.dueDate || "";
+  document.getElementById("task-repeat").value = "";
+  recurState.task = {};
+  onRepeatChange("task");
+  attachTaskModalListeners();
   document.getElementById("task-modal").classList.add("open");
   setTimeout(() => document.getElementById("task-title-input").focus(), 280);
+}
+
+function attachTaskModalListeners() {
+  const dueEl = document.getElementById("task-due-input");
+  dueEl.removeEventListener("change", recurStartChanged_task);
+  dueEl.addEventListener("change", recurStartChanged_task);
 }
 
 document.getElementById("task-title-input").addEventListener("keydown", e => { if (e.key === "Enter") saveTask(); });
@@ -1550,7 +1844,34 @@ function saveTask() {
   const title   = document.getElementById("task-title-input").value.trim();
   const notes   = document.getElementById("task-notes-input").value.trim();
   const dueDate = document.getElementById("task-due-input").value;
+  const repeat  = document.getElementById("task-repeat").value;
   if (!title) { showToast("Please enter a task"); return; }
+
+  if (repeat) {
+    if (!dueDate) { showToast("Recurring tasks need a due date"); return; }
+    const seriesEnd = recurEndDs("task");
+    if (!seriesEnd || !isValidRecurEnd(dueDate, seriesEnd, repeat)) {
+      showToast("Pick a highlighted date for the repeat-until."); return;
+    }
+    if (editTaskKey) {
+      const existing = tasks[editTaskKey];
+      const updated = Object.assign({}, existing, { title, notes, dueDate });
+      window.__set(window.__ref(window.__db, tasksPath() + "/" + editTaskKey), updated);
+      closeModal("task-modal"); showToast("Task updated");
+      return;
+    }
+    const dates = generateRecurDates(dueDate, seriesEnd, repeat);
+    const addedAt = new Date().toISOString();
+    dates.forEach(d => {
+      window.__push(window.__ref(window.__db, tasksPath()), {
+        title, notes, dueDate: d, done: false, addedBy: currentUser, addedAt
+      });
+    });
+    closeModal("task-modal");
+    showToast("Added " + dates.length + " task" + (dates.length !== 1 ? "s" : ""));
+    return;
+  }
+
   if (editTaskKey) {
     const existing = tasks[editTaskKey];
     const updated = Object.assign({}, existing, { title, notes, dueDate });
