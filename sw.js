@@ -1,4 +1,4 @@
-const CACHE = "sadies-schedule-v4";
+const CACHE = "sadies-schedule-v5";
 const ASSETS = ["/Sadies-Schedule/", "/Sadies-Schedule/index.html", "/Sadies-Schedule/manifest.json"];
 
 self.addEventListener("install", e => {
@@ -12,8 +12,6 @@ self.addEventListener("activate", e => {
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: "window" }))
-      .then(clients => Promise.all(clients.map(c => c.navigate(c.url))))
   );
 });
 
