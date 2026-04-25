@@ -91,11 +91,6 @@
   .nav-btn:active { background: var(--border); }
   .month-label { font-size: .9rem; font-weight: 600; color: var(--text); min-width: 120px; text-align: center; }
 
-  /* Switch child button */
-  .switch-child-btn { background: var(--surface2); border: 1.5px solid var(--border); color: var(--text); border-radius: 8px; padding: .38rem .65rem; font-size: .75rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: background .12s; display: none; white-space: nowrap; }
-  .switch-child-btn:hover { background: #d0dae6; }
-  .switch-child-btn.trev-jess-only { display: none; }
-
   /* TABS */
   .tabs { display: flex; background: var(--surface); border-bottom: 2px solid var(--border); overflow-x: auto; }
   .tab-btn { flex: 1; min-width: 0; padding: .65rem .25rem; border: none; background: transparent; color: var(--text2); font-family: var(--font-body); font-size: .78rem; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; transition: color .15s, border-color .15s; white-space: nowrap; margin-bottom: -2px; }
@@ -253,9 +248,16 @@
   .custody-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.10); }
   .custody-label { font-size: .9rem; color: var(--text); font-weight: 500; }
 
-  /* Settings / Change PIN */
-  .settings-link { font-size: .68rem; color: var(--accent); text-decoration: none; cursor: pointer; }
-  .settings-link:hover { text-decoration: underline; }
+  /* Options menu */
+  .options-wrap { position: relative; display: inline-block; }
+  .options-btn { background: var(--surface2); border: 1.5px solid var(--border); color: var(--text); border-radius: 8px; padding: .38rem .6rem; font-size: .9rem; line-height: 1; font-family: var(--font-body); cursor: pointer; transition: background .12s; display: inline-flex; align-items: center; gap: .3rem; }
+  .options-btn:hover { background: #d0dae6; }
+  .options-btn:active { background: var(--border); }
+  .options-menu { position: absolute; top: calc(100% + 6px); right: 0; min-width: 180px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,.12); padding: .35rem; display: none; z-index: 250; }
+  .options-menu.open { display: block; }
+  .options-item { display: block; width: 100%; text-align: left; background: transparent; border: none; padding: .55rem .7rem; border-radius: 7px; font-family: var(--font-body); font-size: .85rem; color: var(--text); cursor: pointer; }
+  .options-item:hover { background: var(--surface2); }
+  .options-item.danger { color: var(--danger); }
 
   .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: .62rem 1.2rem; border-radius: 999px; font-size: .83rem; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 999; white-space: nowrap; font-weight: 500; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -327,12 +329,17 @@
       <div class="header-title" id="header-title">Sadie's Schedule</div>
       <div class="header-user">
         <span id="user-display"></span>
-        &nbsp;&middot;&nbsp;<a href="#" onclick="signOut();return false" style="color:var(--text2);text-decoration:none;font-size:.68rem">sign out</a>
-        &nbsp;&middot;&nbsp;<a href="#" class="settings-link" onclick="openChangePIN();return false">change PIN</a>
       </div>
     </div>
     <div class="header-right">
-      <button class="switch-child-btn" id="switch-child-btn" onclick="toggleChild()"></button>
+      <div class="options-wrap">
+        <button class="options-btn" id="options-btn" onclick="toggleOptionsMenu(event)" aria-haspopup="true" aria-expanded="false" aria-label="Options">&#9881;</button>
+        <div class="options-menu" id="options-menu" role="menu">
+          <button class="options-item" id="options-switch-child" role="menuitem" onclick="optionsAction('switch')" style="display:none"></button>
+          <button class="options-item" role="menuitem" onclick="optionsAction('changePIN')">Change PIN</button>
+          <button class="options-item danger" role="menuitem" onclick="optionsAction('signOut')">Sign out</button>
+        </div>
+      </div>
       <div class="month-label" id="month-label" style="visibility:hidden"></div>
       <button class="nav-btn" id="fwd-btn" onclick="changeMonth(1)" style="visibility:hidden">&#8250;</button>
     </div>
@@ -621,17 +628,19 @@ function syncActiveChildData() {
 function isTrevJess() { return currentUser === 'Trevor' || currentUser === 'Jess'; }
 
 function updateChildUI() {
-  const btn = document.getElementById('switch-child-btn');
+  const switchItem = document.getElementById('options-switch-child');
   const headerTitle = document.getElementById('header-title');
   const legendEl = document.getElementById('custody-legend');
   const overnightBar = document.getElementById('overnight-bar');
 
-  // Switch button visibility
-  if (isTrevJess()) {
-    btn.style.display = 'block';
-    btn.textContent = activeChild === 'sadie' ? 'Switch to Logan' : 'Switch to Sadie';
-  } else {
-    btn.style.display = 'none';
+  // Switch menu item visibility
+  if (switchItem) {
+    if (isTrevJess()) {
+      switchItem.style.display = 'block';
+      switchItem.textContent = activeChild === 'sadie' ? 'Switch to Logan' : 'Switch to Sadie';
+    } else {
+      switchItem.style.display = 'none';
+    }
   }
 
   // Header title
@@ -715,6 +724,36 @@ function signOut() {
   document.getElementById("user-select").value = "";
   showScreen("screen-who");
 }
+
+// ── Options menu ──
+function toggleOptionsMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('options-menu');
+  const btn  = document.getElementById('options-btn');
+  if (!menu) return;
+  const willOpen = !menu.classList.contains('open');
+  menu.classList.toggle('open', willOpen);
+  if (btn) btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+}
+function closeOptionsMenu() {
+  const menu = document.getElementById('options-menu');
+  const btn  = document.getElementById('options-btn');
+  if (menu) menu.classList.remove('open');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+function optionsAction(action) {
+  closeOptionsMenu();
+  if (action === 'switch')        toggleChild();
+  else if (action === 'changePIN') openChangePIN();
+  else if (action === 'signOut')   signOut();
+}
+document.addEventListener('click', e => {
+  const wrap = document.querySelector('.options-wrap');
+  if (wrap && !wrap.contains(e.target)) closeOptionsMenu();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeOptionsMenu();
+});
 
 // ── Change PIN ──
 function openChangePIN() {
