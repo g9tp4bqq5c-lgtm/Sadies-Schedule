@@ -531,7 +531,7 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="task-modal-title">Add Task</div>
     <div class="form-row"><label class="form-label">Task</label><input class="form-input" id="task-title-input" type="text" placeholder="e.g. Pay for field trip ($12)"></div>
-    <div class="form-row"><label class="form-label">Due date (optional)</label><input class="form-input" id="task-due-input" type="date"></div>
+    <div class="form-row"><label class="form-label">Due date</label><input class="form-input" id="task-due-input" type="date"></div>
     <div class="form-row">
       <label class="form-label">Repeats</label>
       <select class="form-select" id="task-repeat" onchange="onRepeatChange('task')">
@@ -1846,9 +1846,9 @@ function saveTask() {
   const dueDate = document.getElementById("task-due-input").value;
   const repeat  = document.getElementById("task-repeat").value;
   if (!title) { showToast("Please enter a task"); return; }
+  if (!dueDate) { showToast("Please pick a due date"); return; }
 
   if (repeat) {
-    if (!dueDate) { showToast("Recurring tasks need a due date"); return; }
     const seriesEnd = recurEndDs("task");
     if (!seriesEnd || !isValidRecurEnd(dueDate, seriesEnd, repeat)) {
       showToast("Pick a highlighted date for the repeat-until."); return;
