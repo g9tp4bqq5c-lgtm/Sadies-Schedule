@@ -261,6 +261,9 @@
   .cust-transition-row input { margin: 0; cursor: pointer; }
 
   /* Recurrence picker (mini calendar with valid recurrence dates highlighted) */
+  .recur-shortcuts { display: flex; gap: .35rem; margin-top: .35rem; flex-wrap: wrap; }
+  .recur-chip { background: var(--surface2); border: 1.5px solid var(--border); color: var(--text); border-radius: 14px; padding: .25rem .7rem; font-family: var(--font-body); font-size: .75rem; font-weight: 600; cursor: pointer; }
+  .recur-chip:hover { background: rgba(155,89,182,.14); border-color: var(--accent); color: var(--accent); }
   .recur-cal { background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: .55rem; margin-top: .35rem; }
   .recur-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .4rem; padding: 0 .15rem; }
   .recur-cal-month { font-weight: 600; font-size: .9rem; color: var(--text); }
@@ -531,7 +534,7 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="task-modal-title">Add Task</div>
     <div class="form-row"><label class="form-label">Task</label><input class="form-input" id="task-title-input" type="text" placeholder="e.g. Pay for field trip ($12)"></div>
-    <div class="form-row"><label class="form-label">Due date (optional)</label><input class="form-input" id="task-due-input" type="date"></div>
+    <div class="form-row"><label class="form-label">Due date</label><input class="form-input" id="task-due-input" type="date"></div>
     <div class="form-row">
       <label class="form-label">Repeats</label>
       <select class="form-select" id="task-repeat" onchange="onRepeatChange('task')">
@@ -609,7 +612,7 @@
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set, remove, push, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, set, remove, push, update, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ════════════════════════════════════════════
 // FIREBASE CONFIG — your project
@@ -643,6 +646,8 @@ window.__ref    = ref;
 window.__set    = (r, v) => { const p = set(r, v);    p.catch(e => reportFbError("Save", e));   return p; };
 window.__remove = (r)    => { const p = remove(r);    p.catch(e => reportFbError("Delete", e)); return p; };
 window.__push   = (r, v) => { const p = push(r, v);  p.catch(e => reportFbError("Save", e));   return p; };
+window.__update = (r, v) => { const p = update(r, v); p.catch(e => reportFbError("Save", e));   return p; };
+window.__pushKey = (r)   => push(r).key;
 window.__get    = get;
 
 const listen = (path, cb, label) =>
@@ -1595,6 +1600,47 @@ function recurEndDs(prefix) {
 // Called when the Repeats <select> changes, when the start date changes, or
 // when the modal opens. Shows/hides the picker, re-renders the calendar,
 // snaps any stale end date to a valid one.
+// Snap an arbitrary target date down to the nearest valid recurrence
+// boundary at or before it. Returns the start itself if nothing earlier
+// works (e.g. monthly with start=Jan 31 and target in February).
+function snapToValidEnd(start, target, freq) {
+  if (!start || !target || !freq) return start;
+  if (target <= start) return start;
+  const s = new Date(start  + 'T12:00:00');
+  const t = new Date(target + 'T12:00:00');
+  if (freq === 'daily') return target;
+  if (freq === 'weekly') {
+    const weeks = Math.floor((t - s) / (86400000 * 7));
+    s.setDate(s.getDate() + weeks * 7);
+    return s.toISOString().slice(0, 10);
+  }
+  if (freq === 'biweekly') {
+    const fortnights = Math.floor((t - s) / (86400000 * 14));
+    s.setDate(s.getDate() + fortnights * 14);
+    return s.toISOString().slice(0, 10);
+  }
+  if (freq === 'monthly') {
+    let m = (t.getFullYear() - s.getFullYear()) * 12 + (t.getMonth() - s.getMonth());
+    while (m >= 0) {
+      const cand = new Date(s); cand.setMonth(cand.getMonth() + m);
+      if (cand.getDate() === s.getDate()) return cand.toISOString().slice(0, 10);
+      m--;
+    }
+  }
+  return start;
+}
+
+// Sensible default series length when a user first picks a frequency:
+// long enough that ignoring the picker still produces a useful series.
+function defaultRecurEnd(start, freq) {
+  const s = new Date(start + 'T12:00:00');
+  if (freq === 'daily')    s.setDate(s.getDate() + 13);     // 14 days
+  if (freq === 'weekly')   s.setDate(s.getDate() + 7 * 11); // 12 weeks
+  if (freq === 'biweekly') s.setDate(s.getDate() + 14 * 5); // 6 fortnights
+  if (freq === 'monthly')  s.setMonth(s.getMonth() + 11);   // 12 months
+  return s.toISOString().slice(0, 10);
+}
+
 function onRepeatChange(prefix) {
   const freq = recurFreq(prefix);
   const picker = document.getElementById(prefix + '-recur-picker');
@@ -1618,13 +1664,33 @@ function onRepeatChange(prefix) {
   // Initialize state for this picker
   if (!recurState[prefix]) recurState[prefix] = {};
   const st = recurState[prefix];
-  // Default: select the first occurrence (start itself = 1 occurrence)
-  if (!st.end || !isValidRecurEnd(start, st.end, freq)) st.end = start;
+  // Default: a sensible multi-occurrence span so out-of-the-box use creates
+  // a real series. Snap to the nearest valid boundary.
+  if (!st.end || !isValidRecurEnd(start, st.end, freq)) {
+    st.end = snapToValidEnd(start, defaultRecurEnd(start, freq), freq);
+  }
   // View defaults to the month containing the chosen end date
   const ed = new Date(st.end + 'T12:00:00');
   st.viewYear  = ed.getFullYear();
   st.viewMonth = ed.getMonth();
   picker.style.display = 'block';
+  renderRecurCal(prefix);
+}
+
+// Quick-extend shortcut: jump the end date to "N months after start",
+// snapped down to a valid recurrence boundary. Used by the chip buttons
+// above the picker calendar.
+function recurExtend(prefix, months) {
+  const st = recurState[prefix]; if (!st) return;
+  const start = recurStartDs(prefix);
+  const freq  = recurFreq(prefix);
+  if (!start || !freq) return;
+  const target = new Date(start + 'T12:00:00');
+  target.setMonth(target.getMonth() + months);
+  st.end = snapToValidEnd(start, target.toISOString().slice(0, 10), freq);
+  const ed = new Date(st.end + 'T12:00:00');
+  st.viewYear  = ed.getFullYear();
+  st.viewMonth = ed.getMonth();
   renderRecurCal(prefix);
 }
 
@@ -1654,7 +1720,13 @@ function renderRecurCal(prefix) {
   const prevDisabled = (st.viewYear < startD.getFullYear()) ||
     (st.viewYear === startD.getFullYear() && st.viewMonth <= startD.getMonth());
 
-  let html = '<div class="recur-cal-header">' +
+  let html = '<div class="recur-shortcuts">' +
+    '<button type="button" class="recur-chip" onclick="recurExtend(\'' + prefix + '\', 1)">1 mo</button>' +
+    '<button type="button" class="recur-chip" onclick="recurExtend(\'' + prefix + '\', 3)">3 mo</button>' +
+    '<button type="button" class="recur-chip" onclick="recurExtend(\'' + prefix + '\', 6)">6 mo</button>' +
+    '<button type="button" class="recur-chip" onclick="recurExtend(\'' + prefix + '\', 12)">1 yr</button>' +
+    '</div>' +
+    '<div class="recur-cal-header">' +
     '<button type="button" class="recur-cal-nav" onclick="recurNav(\'' + prefix + '\', -1)"' + (prevDisabled ? ' disabled' : '') + '>&#8249;</button>' +
     '<div class="recur-cal-month">' + monthLabel + '</div>' +
     '<button type="button" class="recur-cal-nav" onclick="recurNav(\'' + prefix + '\', 1)">&#8250;</button>' +
@@ -1693,7 +1765,7 @@ function recurPick(prefix, ds) {
   recurState[prefix].end = ds;
   renderRecurCal(prefix);
 }
-function saveEvent() {
+async function saveEvent() {
   const title = document.getElementById("ev-title").value.trim();
   const start = document.getElementById("ev-start").value;
   const end   = document.getElementById("ev-end").value;
@@ -1714,17 +1786,27 @@ function saveEvent() {
     }
     if (editKey) {
       const p = { title, start, end: start, startTime, endTime, notes, addedBy: currentUser };
-      window.__set(window.__ref(window.__db, eventsPath() + "/" + editKey), p);
-      closeModal("event-modal"); showToast("Event saved");
+      try {
+        await window.__set(window.__ref(window.__db, eventsPath() + "/" + editKey), p);
+        closeModal("event-modal"); showToast("Event saved");
+      } catch (e) { /* error toast already shown by wrapper */ }
       return;
     }
+    // Atomic batch: build one updates object with auto-keys and write it
+    // in a single update() call. Either all occurrences land or none do —
+    // and any rules rejection surfaces as a single clear error.
     const dates = generateRecurDates(start, seriesEnd, repeat);
+    const parentRef = window.__ref(window.__db, eventsPath());
+    const updates = {};
     dates.forEach(d => {
-      const p = { title, start: d, end: d, startTime, endTime, notes, addedBy: currentUser };
-      window.__push(window.__ref(window.__db, eventsPath()), p);
+      const newKey = window.__pushKey(parentRef);
+      updates[newKey] = { title, start: d, end: d, startTime, endTime, notes, addedBy: currentUser };
     });
-    closeModal("event-modal");
-    showToast("Saved " + dates.length + " event" + (dates.length !== 1 ? "s" : ""));
+    try {
+      await window.__update(parentRef, updates);
+      closeModal("event-modal");
+      showToast("Saved " + dates.length + " event" + (dates.length !== 1 ? "s" : ""));
+    } catch (e) { /* error toast already shown by wrapper */ }
     return;
   }
 
@@ -1732,9 +1814,11 @@ function saveEvent() {
   if (!end) { showToast("Please fill in title and dates"); return; }
   if (end < start) { showToast("End can't be before start"); return; }
   const p = { title, start, end, startTime, endTime, notes, addedBy: currentUser };
-  editKey ? window.__set(window.__ref(window.__db, eventsPath() + "/" + editKey), p)
-          : window.__push(window.__ref(window.__db, eventsPath()), p);
-  closeModal("event-modal"); showToast("Event saved");
+  try {
+    if (editKey) await window.__set(window.__ref(window.__db, eventsPath() + "/" + editKey), p);
+    else         await window.__push(window.__ref(window.__db, eventsPath()), p);
+    closeModal("event-modal"); showToast("Event saved");
+  } catch (e) { /* error toast already shown */ }
 }
 function deleteEvent(key) {
   const ev = events[key];
@@ -1840,15 +1924,15 @@ function attachTaskModalListeners() {
 
 document.getElementById("task-title-input").addEventListener("keydown", e => { if (e.key === "Enter") saveTask(); });
 
-function saveTask() {
+async function saveTask() {
   const title   = document.getElementById("task-title-input").value.trim();
   const notes   = document.getElementById("task-notes-input").value.trim();
   const dueDate = document.getElementById("task-due-input").value;
   const repeat  = document.getElementById("task-repeat").value;
   if (!title) { showToast("Please enter a task"); return; }
+  if (!dueDate) { showToast("Please pick a due date"); return; }
 
   if (repeat) {
-    if (!dueDate) { showToast("Recurring tasks need a due date"); return; }
     const seriesEnd = recurEndDs("task");
     if (!seriesEnd || !isValidRecurEnd(dueDate, seriesEnd, repeat)) {
       showToast("Pick a highlighted date for the repeat-until."); return;
@@ -1856,34 +1940,42 @@ function saveTask() {
     if (editTaskKey) {
       const existing = tasks[editTaskKey];
       const updated = Object.assign({}, existing, { title, notes, dueDate });
-      window.__set(window.__ref(window.__db, tasksPath() + "/" + editTaskKey), updated);
-      closeModal("task-modal"); showToast("Task updated");
+      try {
+        await window.__set(window.__ref(window.__db, tasksPath() + "/" + editTaskKey), updated);
+        closeModal("task-modal"); showToast("Task updated");
+      } catch (e) { /* error toast already shown */ }
       return;
     }
     const dates = generateRecurDates(dueDate, seriesEnd, repeat);
     const addedAt = new Date().toISOString();
+    const parentRef = window.__ref(window.__db, tasksPath());
+    const updates = {};
     dates.forEach(d => {
-      window.__push(window.__ref(window.__db, tasksPath()), {
-        title, notes, dueDate: d, done: false, addedBy: currentUser, addedAt
-      });
+      const newKey = window.__pushKey(parentRef);
+      updates[newKey] = { title, notes, dueDate: d, done: false, addedBy: currentUser, addedAt };
     });
-    closeModal("task-modal");
-    showToast("Added " + dates.length + " task" + (dates.length !== 1 ? "s" : ""));
+    try {
+      await window.__update(parentRef, updates);
+      closeModal("task-modal");
+      showToast("Added " + dates.length + " task" + (dates.length !== 1 ? "s" : ""));
+    } catch (e) { /* error toast already shown */ }
     return;
   }
 
-  if (editTaskKey) {
-    const existing = tasks[editTaskKey];
-    const updated = Object.assign({}, existing, { title, notes, dueDate });
-    window.__set(window.__ref(window.__db, tasksPath() + "/" + editTaskKey), updated);
-    showToast("Task updated");
-  } else {
-    window.__push(window.__ref(window.__db, tasksPath()), {
-      title, notes, dueDate, done: false, addedBy: currentUser, addedAt: new Date().toISOString()
-    });
-    showToast("Task added");
-  }
-  closeModal("task-modal");
+  try {
+    if (editTaskKey) {
+      const existing = tasks[editTaskKey];
+      const updated = Object.assign({}, existing, { title, notes, dueDate });
+      await window.__set(window.__ref(window.__db, tasksPath() + "/" + editTaskKey), updated);
+      showToast("Task updated");
+    } else {
+      await window.__push(window.__ref(window.__db, tasksPath()), {
+        title, notes, dueDate, done: false, addedBy: currentUser, addedAt: new Date().toISOString()
+      });
+      showToast("Task added");
+    }
+    closeModal("task-modal");
+  } catch (e) { /* error toast already shown */ }
 }
 
 function toggleTask(key) {
