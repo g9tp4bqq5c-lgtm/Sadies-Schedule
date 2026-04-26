@@ -1,0 +1,65 @@
+{
+  "rules": {
+    "custody": {
+      ".read": true,
+      ".write": true,
+      "$date": {
+        ".validate": "newData.isString() && newData.val().length < 20"
+      }
+    },
+    "transitions": {
+      ".read": true,
+      ".write": true,
+      "$date": {
+        ".validate": "newData.isBoolean()"
+      }
+    },
+    "events": {
+      ".read": true,
+      ".write": true,
+      "$eventId": {
+        ".validate": "newData.hasChildren(['title', 'start', 'end'])",
+        "title":  { ".validate": "newData.isString() && newData.val().length < 200" },
+        "start":  { ".validate": "newData.isString()" },
+        "end":    { ".validate": "newData.isString()" },
+        "$other": { ".validate": true }
+      }
+    },
+    "loganEvents": {
+      ".read": true,
+      ".write": true,
+      "$eventId": {
+        ".validate": "newData.hasChildren(['title', 'start', 'end'])",
+        "title":  { ".validate": "newData.isString() && newData.val().length < 200" },
+        "start":  { ".validate": "newData.isString()" },
+        "end":    { ".validate": "newData.isString()" },
+        "$other": { ".validate": true }
+      }
+    },
+    "tasks": {
+      ".read": true,
+      ".write": true,
+      "$taskId": {
+        ".validate": "newData.hasChildren(['title'])",
+        "title":  { ".validate": "newData.isString() && newData.val().length < 500" },
+        "$other": { ".validate": true }
+      }
+    },
+    "loganTasks": {
+      ".read": true,
+      ".write": true,
+      "$taskId": {
+        ".validate": "newData.hasChildren(['title'])",
+        "title":  { ".validate": "newData.isString() && newData.val().length < 500" },
+        "$other": { ".validate": true }
+      }
+    },
+    "pins": {
+      ".read": true,
+      ".write": true,
+      "$user": {
+        ".validate": "newData.isString() && newData.val().length < 50"
+      }
+    }
+  }
+}
