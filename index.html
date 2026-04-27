@@ -506,13 +506,10 @@
         <input type="checkbox" id="cust-transition"> End date is the handoff/transition day
       </label>
     </div>
-    <!-- Transition times -->
+    <!-- Switch off time -->
     <div class="form-row">
-      <label class="form-label">Transition times (optional)</label>
-      <div class="date-row">
-        <div><label class="form-label" style="font-size:.65rem">Handoff start</label><input class="form-input" id="cust-start-time" type="time" value="18:00"></div>
-        <div><label class="form-label" style="font-size:.65rem">Handoff end</label><input class="form-input" id="cust-end-time" type="time" value="18:00"></div>
-      </div>
+      <label class="form-label">Switch off time (optional)</label>
+      <input class="form-input" id="cust-switch-time" type="time" value="18:00">
     </div>
 
     <div class="custody-toggle">
@@ -1836,8 +1833,7 @@ function openCustodyModalForDay(ds, label) {
   document.getElementById("custody-modal-title").textContent = "Custody: " + label;
   document.getElementById("cust-from").value = ds;
   document.getElementById("cust-to").value   = ds;
-  document.getElementById("cust-start-time").value = "18:00";
-  document.getElementById("cust-end-time").value   = "18:00";
+  document.getElementById("cust-switch-time").value = "18:00";
   document.getElementById("cust-transition").checked = transitions[ds] === true;
   const cur = custody[ds] || "";
   document.querySelectorAll(".custody-opt").forEach(el => {
