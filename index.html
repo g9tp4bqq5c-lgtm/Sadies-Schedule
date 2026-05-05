@@ -1391,7 +1391,7 @@ function renderUpcoming() {
       let inner = "<div class=\"upcoming-event-title\">" + esc(ev.title) + "</div>";
       let dateStr = ev.start !== ev.end ? fmtDisplayDate(startD) + " \u2192 " + fmtDisplayDate(endD) : fmtDisplayDate(startD);
       if (ev.startTime || ev.endTime) {
-        dateStr += " &middot; " + (ev.startTime || "") + (ev.endTime ? " \u2013 " + ev.endTime : "");
+        dateStr += " &middot; " + fmtTime12(ev.startTime) + (ev.endTime ? " \u2013 " + fmtTime12(ev.endTime) : "");
       }
       inner += "<div class=\"upcoming-event-meta\">" + dateStr + "</div>";
       if (ev.notes) inner += "<div class=\"upcoming-event-meta\" style=\"margin-top:2px\">" + esc(ev.notes) + "</div>";
@@ -1423,6 +1423,17 @@ function renderUpcoming() {
 function fmtDisplayDate(d) {
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
+function fmtTime12(t) {
+  if (!t) return "";
+  const m = /^(\d{1,2}):(\d{2})/.exec(String(t));
+  if (!m) return t;
+  let h = parseInt(m[1], 10);
+  const mm = m[2];
+  const period = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  if (h === 0) h = 12;
+  return h + ":" + mm + " " + period;
+}
 
 // ── Day modal ──
 function openDayModal(ds, day, cust, devs, holiday) {
@@ -1447,7 +1458,7 @@ function openDayModal(ds, day, cust, devs, holiday) {
       const d = events[ev.key];
       if (!d) return;
       const rng = d.start === d.end ? d.start : d.start + " \u2192 " + d.end;
-      const timeStr = (d.startTime || d.endTime) ? " &middot; " + (d.startTime||"") + (d.endTime ? "\u2013"+d.endTime : "") : "";
+      const timeStr = (d.startTime || d.endTime) ? " &middot; " + fmtTime12(d.startTime) + (d.endTime ? "\u2013"+fmtTime12(d.endTime) : "") : "";
       const ovNote = ev.overlap ? "<span style=\"color:var(--danger);font-weight:600\"> &middot; Custody conflict</span>" : "";
       html += "<div class=\"detail-event\" title=\"Tap to edit\" onclick=\"openEditEventFromDay('" + ev.key + "')\"><div class=\"detail-event-title\">" + esc(ev.title) + ovNote + "</div>" +
         "<div class=\"detail-event-meta\">" + rng + timeStr + (d.notes ? " &middot; " + esc(d.notes) : "") + "</div>" +
